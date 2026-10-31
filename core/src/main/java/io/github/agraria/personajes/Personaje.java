@@ -129,9 +129,12 @@ public class Personaje {
             }
         }
 
-        // Límites de los bordes del mapa usando el ancho/alto del frame recortado
-        x = MathUtils.clamp(x, 0, limiteAncho - anchoFrame);
-        y = MathUtils.clamp(y, 0, limiteAlto - altoFrame);
+        float maxX = Math.max(0, limiteAncho - anchoFrame);
+        float maxY = Math.max(0, limiteAlto - altoFrame);
+
+        // Límites de los bordes del mapa
+        x = MathUtils.clamp(x, 0, maxX);
+        y = MathUtils.clamp(y, 0, maxY);
 
         hitbox.setPosition(x, y);
     }
@@ -164,6 +167,19 @@ public class Personaje {
         }
     }
 
+    public void setPosicion(float x, float y) {
+        this.x = x;
+        this.y = y;
+
+        // Actualizar las hitboxes
+        hitbox.setPosition(x, y);
+        hitboxPoly.setPosition(x, y);
+
+        // Detener el movimiento
+        dirX = 0;
+        dirY = 0;
+    }
+    
     public void liberarRecursos() {
         spriteSheet.dispose();
     }

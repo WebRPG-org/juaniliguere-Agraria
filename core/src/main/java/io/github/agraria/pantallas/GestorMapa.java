@@ -27,6 +27,7 @@ public class GestorMapa implements Disposable{
 	    private Array<Polygon> colisionesMapa;
 	    private Rectangle zonaDormir;
 	    private Rectangle zonaTienda;
+	    private Rectangle zonaComprar;
 	    
 	    // Dimensiones del mapa en píxeles
 	    private float anchoMapaPixels;
@@ -66,6 +67,7 @@ public class GestorMapa implements Disposable{
         cargarColisiones();
         cargarZonaDormir();
         cargarZonaTienda();
+        cargarZonaComprar();
         cargarCapas();
 	}
 	
@@ -177,6 +179,25 @@ public class GestorMapa implements Disposable{
 	    }
 	}
 	
+	
+	private Rectangle zonaCompraer; // o zonaComprar
+
+	private void cargarZonaComprar() {
+	    if (mapa.getLayers().get("zonaCompraer") == null) {
+	        return;
+	    }
+
+	    for (MapObject objeto : mapa.getLayers().get("zonaComprar").getObjects()) {
+	        if (objeto.getName() != null &&
+	            objeto.getName().equals("zonaCompraer") &&
+	            objeto.getName().equals("zonaCompraer") && // o el nombre que le hayas puesto en Tiled
+	            objeto instanceof RectangleMapObject) {
+
+	            zonaCompraer = ((RectangleMapObject) objeto).getRectangle();
+	            break;
+	        }
+	    }
+	}
     // =========================
     // CAPAS DEL MAPA
     // =========================
@@ -232,6 +253,7 @@ public class GestorMapa implements Disposable{
     public Array<Polygon> getColisionesMapa() { return colisionesMapa; }
     public Rectangle getZonaDormir() { return zonaDormir; }
     public Rectangle getZonaTienda() { return zonaTienda; }
+    public Rectangle getZonaComprar() { return zonaComprar; }
     public float getAnchoMapaPixels() { return anchoMapaPixels; }
     public float getAltoMapaPixels() { return altoMapaPixels; }
     public int getMapWidthTiles() { return mapWidthTiles; }

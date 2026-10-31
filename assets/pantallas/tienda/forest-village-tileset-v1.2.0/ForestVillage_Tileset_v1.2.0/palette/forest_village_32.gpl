@@ -1,0 +1,36 @@
+GIMP Palette
+Name: Forest Village 32
+Columns: 8
+#
+ 27  23  38	ink #1b1726
+ 23  58  47	fol0 #173a2f
+ 32  85  47	fol1 #20552f
+ 47 116  53	fol2 #2f7435
+ 71 144  64	fol3 #479040
+102 171  72	fol4 #66ab48
+140 198  86	fol5 #8cc656
+182 220 110	fol6 #b6dc6e
+ 62  42  42	earth0 #3e2a2a
+ 94  61  51	earth1 #5e3d33
+134  89  61	earth2 #86593d
+176 127  76	earth3 #b07f4c
+211 168 105	earth4 #d3a869
+ 47  49  66	stone0 #2f3142
+ 76  82 102	stone1 #4c5266
+116 123 140	stone2 #747b8c
+161 168 178	stone3 #a1a8b2
+208 212 214	stone4 #d0d4d6
+ 29  74 122	water0 #1d4a7a
+ 44 110 168	water1 #2c6ea8
+ 74 149 201	water2 #4a95c9
+127 193 224	water3 #7fc1e0
+196 235 240	water4 #c4ebf0
+124  42  51	red0 #7c2a33
+170  63  58	red1 #aa3f3a
+212 102  63	red2 #d4663f
+179 154 116	cream0 #b39a74
+220 200 154	cream1 #dcc89a
+246 241 220	cream2 #f6f1dc
+242 207  74	yellow #f2cf4a
+229 102 143	pink #e5668f
+141  98 196	purple #8d62c4

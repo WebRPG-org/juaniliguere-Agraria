@@ -47,6 +47,16 @@ public class PantallaGranja extends ScreenAdapter {
     private Personaje jugador;
 
     private GestorMapa controlMapa;
+    
+    private GestorMapa mapaGranja;
+    private GestorMapa mapaTienda;
+
+    // Estado de la ubicación del jugador
+    private boolean enTienda = false;
+
+    // Posición del jugador antes de entrar
+    private float posicionAnteriorX;
+    private float posicionAnteriorY;
    
     private OrthographicCamera camara;
     private Viewport vp;
@@ -74,6 +84,7 @@ public class PantallaGranja extends ScreenAdapter {
     
     private Rectangle zonaDormir;
     private Rectangle zonaTienda;
+    private Rectangle zonaComprar;
     
     private Inventario inventario;
     private GestorInventario gestorInventario;
@@ -107,9 +118,14 @@ public class PantallaGranja extends ScreenAdapter {
         hudCamara.setToOrtho(false, V_WIDTH, V_HEIGHT);
         font = new BitmapFont();
 
-        controlMapa = new GestorMapa("pantallas/zona1/AgrariaMapa.tmx");
+        mapaGranja = new GestorMapa("pantallas/zona1/AgrariaMapa.tmx");
+        mapaTienda = new GestorMapa("pantallas/tienda/interiorTienda.tmx");
+       
+        controlMapa = mapaGranja;
+        
         zonaDormir = controlMapa.getZonaDormir();
         zonaTienda = controlMapa.getZonaTienda();
+        zonaComprar = controlMapa.getZonaComprar();
         
         this.inventario = new Inventario(10);
         this.gestorInventario = new GestorInventario(inventario);
@@ -273,14 +289,57 @@ public class PantallaGranja extends ScreenAdapter {
         );
     }
     
+    public void intentarEntrarSalirTienda() {
+        if (!enTienda) {
+            // Si estamos afuera, SOLO entramos si estamos cerca de la zona
+            if (estaCercaDeLaTienda()) {
+                entrarSalirTienda();
+            } else {
+                System.out.println("-> Tenés que estar cerca de la tienda para entrar.");
+            }
+        } else {
+            // Si ya estamos adentro, podemos salir directamente
+            entrarSalirTienda();
+        }
+    }
+    
+    public void entrarSalirTienda() {
+
+    	if (!enTienda) {
+    		
+            System.out.println("ENTRANDO A LA TIENDA");
+            posicionAnteriorX = jugador.getX();
+            posicionAnteriorY = jugador.getY();
+
+            controlMapa = mapaTienda;
+            jugador.setPosicion(10, 120);
+            enTienda = true;
+            
+         // Cambiá el zoom para que la tienda se vea completa y alejada (ej: 1.0f o el que prefieras)
+//            camara.zoom = 0.8f;
+
+        } else {
+            System.out.println("SALIENDO A LA GRANJA");
+            controlMapa = mapaGranja;
+            jugador.setPosicion(posicionAnteriorX, posicionAnteriorY);
+            enTienda = false;
+        }
+
+        // Actualizar referencias del mapa actual
+        zonaDormir = controlMapa.getZonaDormir();
+        zonaTienda = controlMapa.getZonaTienda();
+        zonaComprar = controlMapa.getZonaComprar();
+    }
+    
     public void procesarAbrirTienda() {
-    	
-        if (!estaCercaDeLaTienda()) {
+        if (!estaCercaDeComprar()) {
+            System.out.println("-> Tenés que pararte frente al mostrador para comprar.");
             return;
         }
-       
+        
         controlTienda.abrir();
     }
+
     
     public boolean estaCercaDeLaTienda() {
         if (zonaTienda == null) {
@@ -291,11 +350,20 @@ public class PantallaGranja extends ScreenAdapter {
                 jugador.getPiesY()
         );
     }
+    public boolean estaCercaDeComprar() {
+        if (zonaComprar == null) {
+        	System.out.println("⚠️ ¡ALERTA: zonaComprar es NULL! No se cargó bien o no se actualizó al entrar.");
+            return false;
+        }
+        return zonaComprar.contains(
+                jugador.getCentroX(),
+                jugador.getPiesY()
+        );
+    }
     
-
     @Override
     public void render(float delta) {
-
+    	ScreenUtils.clear(0, 0, 0, 1);
         controlClima.actualizar(delta);
         controlSueno.actualizar(delta, reloj, gestorCultivos);
 
@@ -308,19 +376,27 @@ public class PantallaGranja extends ScreenAdapter {
         
         jugador.actualizar(delta, controlMapa.getColisionesMapa(), controlMapa.getAnchoMapaPixels(), controlMapa.getAltoMapaPixels());
         actualizarCamara();
+     // =========================
+     // DIBUJAR MAPA Y PERSONAJE
+     // =========================
 
-        ScreenUtils.clear(0f, 0f, 0f, 1f);
+     controlMapa.setView(camara);
+     controlMapa.renderAbajo();
 
-        controlMapa.setView(camara);
-        controlMapa.renderAbajo();
+     batch.setProjectionMatrix(camara.combined);
+     batch.begin();
 
-        batch.setProjectionMatrix(camara.combined);
-        batch.begin();
-        renderizarCultivos();
-        jugador.renderizar(batch);
-        batch.end();
+     // Los cultivos solamente se dibujan en la granja
+     if (!enTienda) {
+         renderizarCultivos();
+     }
 
-        controlMapa.renderArriba();
+     // Dibujar al jugador en ambos mapas
+     jugador.renderizar(batch);
+
+     batch.end();
+
+     controlMapa.renderArriba();
 
         // Efectos visuales de clima
         controlClima.renderizarOscurecimiento(shapeRenderer, camara, vp.getWorldWidth(), vp.getWorldHeight());
@@ -353,20 +429,37 @@ public class PantallaGranja extends ScreenAdapter {
 
     private void actualizarCamara() {
 
-        float medioAnchoCamara = (camara.viewportWidth * camara.zoom) / 2f;
+    	float medioAnchoCamara = (camara.viewportWidth * camara.zoom) / 2f;
         float medioAltoCamara = (camara.viewportHeight * camara.zoom) / 2f;
 
-        float camX = MathUtils.clamp(
-                jugador.getX(),
-                medioAnchoCamara,
-                controlMapa.getAnchoMapaPixels() - medioAnchoCamara
-        );
+        float anchoMapa = controlMapa.getAnchoMapaPixels();
+        float altoMapa = controlMapa.getAltoMapaPixels();
+        
+        float viewportAnchoEfectivo = camara.viewportWidth * camara.zoom;
+        float viewportAltoEfectivo = camara.viewportHeight * camara.zoom;
 
-        float camY = MathUtils.clamp(
-                jugador.getY(),
-                medioAltoCamara,
-                controlMapa.getAltoMapaPixels() - medioAltoCamara
-        );
+        float camX, camY;
+
+        // Si el mapa es más chico que la pantalla (como la tienda), lo centramos de forma segura
+        if (anchoMapa < viewportAnchoEfectivo) {
+            camX = anchoMapa / 2f;
+        } else {
+            camX = MathUtils.clamp(
+                    jugador.getX(),
+                    medioAnchoCamara,
+                    anchoMapa - medioAnchoCamara
+            );
+        }
+
+        if (altoMapa < viewportAltoEfectivo) {
+            camY = altoMapa / 2f;
+        } else {
+            camY = MathUtils.clamp(
+                    jugador.getY(),
+                    medioAltoCamara,
+                    altoMapa - medioAltoCamara
+            );
+        }
 
         camara.position.set(camX, camY, 0);
         camara.update();
@@ -427,7 +520,8 @@ public class PantallaGranja extends ScreenAdapter {
     public void dispose() {
         batch.dispose();
         jugador.liberarRecursos();
-        controlMapa.dispose();
+        mapaGranja.dispose();
+        mapaTienda.dispose();
         controlClima.dispose();
         gestorInventario.dispose();
         stageUi.dispose();

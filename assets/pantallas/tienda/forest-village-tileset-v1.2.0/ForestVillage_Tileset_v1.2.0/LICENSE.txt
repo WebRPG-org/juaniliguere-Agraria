@@ -1,0 +1,60 @@
+FOREST VILLAGE TILESET - ASSET LICENSE
+Version 1.2.0
+
+Copyright (c) 2026 EazyD Studio. All rights reserved.
+"Licensor" means the copyright holder named above. "Assets" means every file in this pack: images, sprite sheets,
+tile sheets, palette files, the Godot TileSet and demo scene, data files and documentation. "You" means the person or
+organisation that bought or otherwise lawfully obtained the Assets from the Licensor or an authorised storefront.
+
+1. WHAT YOU MAY DO
+   The Licensor grants You a non-exclusive, non-transferable, worldwide, perpetual, royalty-free licence to:
+   a) use the Assets in any number of projects, commercial or non-commercial: video games, apps, prototypes,
+      videos, streams, books, tabletop material, websites, marketing and similar works ("Your Projects");
+   b) modify the Assets: recolour, crop, combine, extend or edit them, and ship the modified versions inside Your Projects;
+   c) include the Assets, in original or modified form, in the files of a game or application that You distribute
+      for free or for sale, on any platform;
+   d) share screenshots, videos and promotional material that show the Assets;
+   e) let employees, team members and contractors work with the Assets for Your Projects. They must delete their copies when the work ends.
+   If You are an organisation, the licence covers that organisation's own projects.
+
+2. WHAT YOU MAY NOT DO
+   a) Resell, sublicense, rent, lend, give away, upload or otherwise redistribute the Assets, in whole or in part,
+      original or modified, as standalone files or as an asset pack, tileset, sprite pack, kit, bundle, subscription
+      or any similar product, free or paid, including on asset stores, marketplaces, file-sharing sites and public repositories.
+   b) Include the Assets in game templates, starter kits, engine plugins, level-editor content or mod kits whose purpose is
+      to give other people the Assets to build their own games.
+   c) Claim that You created the Assets, or register the Assets or close derivatives of them as Your trademark or copyright.
+   d) Use the Assets to train, fine-tune or benchmark machine-learning or generative AI models, or to build datasets for them.
+   e) Use the Assets in NFTs or other blockchain tokens.
+   f) Use the Assets in content that is unlawful or that is hateful or defamatory towards a person or group.
+
+3. OPEN-SOURCE PROJECTS
+   You may use the Assets in a project whose source code is open source, but the Assets (and anything derived from them)
+   must stay under this licence. State clearly in your repository that the Assets are excluded from the code licence,
+   and do not publish the original files in a form that lets others reuse them freely.
+
+4. OWNERSHIP
+   The Licensor keeps all copyright in the Assets. This licence does not transfer ownership. Your Projects, your own code,
+   your own art and your own story remain yours.
+
+5. ORIGIN OF THE ASSETS
+   All art in this pack was produced programmatically by original generator code and original pixel patterns written for this
+   project (the code was written with the help of an AI coding assistant). No image-generation model was used, and no third-party
+   or copyrighted artwork was copied, traced or sampled. The pack contains no characters from any other work and no fonts.
+
+6. ATTRIBUTION
+   Credit is appreciated, for example "Forest Village tileset by EazyD Studio", but it is not required.
+
+7. NO WARRANTY, LIMITED LIABILITY
+   The Assets are provided "as is" without warranty of any kind. To the maximum extent permitted by law the Licensor is not
+   liable for any damages arising from the use of the Assets, and total liability is limited to the price You paid for the Assets.
+
+8. TERMINATION
+   This licence ends automatically if You breach it. You must then stop using and delete the Assets. Games already
+   released in good faith before the breach may continue to be distributed.
+
+9. UPDATES
+   Updated versions of the Assets that You receive are licensed under the licence that ships with them.
+
+Questions or custom licensing (for example for asset stores, templates or large-scale redistribution): contact the Licensor
+through the storefront page where You obtained the Assets.

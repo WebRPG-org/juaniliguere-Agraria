@@ -31,7 +31,11 @@ import io.github.agraria.tienda.VentanaTienda;
 	        if (keycode == Keys.A || keycode == Keys.LEFT)  jugador.dirX = -1;
 	        if (keycode == Keys.D || keycode == Keys.RIGHT) jugador.dirX = 1;
 	        if (keycode == Keys.Z) pantalla.procesarDormir();        
-	        if (keycode == Keys.P) pantalla.procesarAbrirTienda();
+	        if (keycode == Keys.P) pantalla.intentarEntrarSalirTienda();
+	        if (keycode == Keys.T) { 
+	            System.out.println("Pusiste T");
+	            pantalla.procesarAbrirTienda();
+	        }
 	        
 	        // Selección del inventario
 	        if (keycode >= Keys.NUM_1 && keycode <= Keys.NUM_9) {
