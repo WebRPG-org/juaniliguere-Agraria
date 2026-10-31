@@ -352,7 +352,6 @@ public class PantallaGranja extends ScreenAdapter {
     }
     public boolean estaCercaDeComprar() {
         if (zonaComprar == null) {
-        	System.out.println("⚠️ ¡ALERTA: zonaComprar es NULL! No se cargó bien o no se actualizó al entrar.");
             return false;
         }
         return zonaComprar.contains(

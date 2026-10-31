@@ -180,20 +180,19 @@ public class GestorMapa implements Disposable{
 	}
 	
 	
-	private Rectangle zonaCompraer; // o zonaComprar
 
 	private void cargarZonaComprar() {
-	    if (mapa.getLayers().get("zonaCompraer") == null) {
+	    if (mapa.getLayers().get("zonaComprar") == null) {
 	        return;
 	    }
 
 	    for (MapObject objeto : mapa.getLayers().get("zonaComprar").getObjects()) {
 	        if (objeto.getName() != null &&
-	            objeto.getName().equals("zonaCompraer") &&
-	            objeto.getName().equals("zonaCompraer") && // o el nombre que le hayas puesto en Tiled
+	            objeto.getName().equals("zonaComprar") &&
+	            objeto.getName().equals("zonaComprar") && // o el nombre que le hayas puesto en Tiled
 	            objeto instanceof RectangleMapObject) {
 
-	            zonaCompraer = ((RectangleMapObject) objeto).getRectangle();
+	            zonaComprar = ((RectangleMapObject) objeto).getRectangle();
 	            break;
 	        }
 	    }
