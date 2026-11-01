@@ -8,11 +8,16 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class PantallaCarga extends ScreenAdapter {
-
+   
+	private TiledMap map;
+    private OrthogonalTiledMapRenderer renderer;
     private SpriteBatch batch;
     private ShapeRenderer shapeRenderer;
     private BitmapFont font;
@@ -26,6 +31,8 @@ public class PantallaCarga extends ScreenAdapter {
 
     @Override
     public void show() {
+    	
+//        map = new TmxMapLoader().load("pantallas/carga/pantallaCarga.tmx");
         camera = new OrthographicCamera();
         viewport = new FitViewport(800, 600, camera);
         viewport.apply();
@@ -92,6 +99,12 @@ public class PantallaCarga extends ScreenAdapter {
             cambioRealizado = true;
             ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaGranja());
         }
+        
+//        // Asegurate de actualizar la cámara antes de pasarla al renderer
+//        camera.update();
+//        renderer.setView(camera);
+//        renderer.render();
+        
     }
 
     @Override

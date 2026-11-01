@@ -45,7 +45,7 @@ public class Parcela{
 
     public Cultivo cosechar() {
 
-        if (cultivoActual != null && cultivoActual.isCosechable()) {
+        if (cultivoActual != null && (cultivoActual.isCosechable() || cultivoActual.isPodrido())) {
 
             // Guardamos el cultivo antes de vaciar la parcela
             Cultivo cosechado = cultivoActual;

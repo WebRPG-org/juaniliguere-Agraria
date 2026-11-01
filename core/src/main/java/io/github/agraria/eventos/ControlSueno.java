@@ -30,7 +30,7 @@ public class ControlSueno {
     public boolean puedeDormir(Reloj reloj) {
         int hora = reloj.getHoras();
 
-        return hora >= HORA_DORMIR || hora < HORA_LIMITE;
+        return hora >= HORA_DORMIR || hora <= HORA_LIMITE;
     }
     
     

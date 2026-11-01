@@ -82,14 +82,22 @@ public class VentanaTienda {
         
         boolean hayItems = false;
         for (int i = 0; i < 10; i++) {
+        	
             CasillaInventario casilla = inventario.getCasilla(i);
             if (casilla != null && !casilla.estaVacia() && !casilla.getItem().esSemilla()) {
+            	
                 hayItems = true;
                 Item item = casilla.getItem();
                 int cantidad = casilla.getCantidad();
                 
                 // Obtenemos el precio de venta directamente desde el TipoCultivo asociado al ítem
-                int precioVentaUnitario = (item.getTipoCultivo() != null) ? item.getTipoCultivo().getPrecioVenta() : 25;
+                int precioVentaUnitario;
+                if (item.getId().equals("cultivo_podrido") || item.getTipoCultivo() == null) {
+                    precioVentaUnitario = 5;
+                } else {
+                    precioVentaUnitario = item.getTipoCultivo().getPrecioVenta();
+                }
+
                 int precioTotal = precioVentaUnitario * cantidad;
 
                 Label lblItem = new Label(item.getNombre() + " (x" + cantidad + ") - $" + precioTotal, skin);
@@ -98,31 +106,32 @@ public class VentanaTienda {
                 btnVender.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
+                    	
                         casilla.limpiar();
                         billetera.ganar(precioTotal);
                         actualizarContenidoVentana();
+                        
                     }
                 });
 
                 ventana.add(lblItem).padRight(20).left();
                 ventana.add(btnVender).padBottom(5).right();
                 ventana.row();
+                
             }
+            
         }
 
         if (!hayItems) {
             ventana.add(new Label("No tenes cultivos para vender.", skin)).padBottom(10).colspan(2).row();
         }
 
-        // Botón Cerrar
-        TextButton btnCerrar = new TextButton("Cerrar", skin);
-        btnCerrar.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                ventana.remove();
-            }
-        });
-        ventana.add(btnCerrar).padTop(15).colspan(2);
+    }
+    
+    public void cerrarVentana() {
+        if (ventana != null) {
+            ventana.remove();
+        }
     }
     
     public boolean estaAbierta() {

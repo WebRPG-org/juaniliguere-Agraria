@@ -11,6 +11,8 @@ import io.github.agraria.inventario.GestorInventario;
 import io.github.agraria.inventario.Inventario;
 import io.github.agraria.economia.Billetera;
 import io.github.agraria.tienda.VentanaTienda;
+import io.github.agraria.ui.GestorInteraccion;
+import io.github.agraria.ui.InteraccionPrompt;
 import io.github.agraria.control.ControlJugador;
 import io.github.agraria.control.ControlTienda;
 import io.github.agraria.personajes.Personaje;
@@ -51,10 +53,11 @@ public class PantallaGranja extends ScreenAdapter {
     
     private GestorMapa mapaGranja;
     private GestorMapa mapaTienda;
+    private GestorMapa mapaCasa;
 
     // Estado de la ubicación del jugador
     private boolean enTienda = false;
-
+    private boolean enCasa = false;
     // Posición del jugador antes de entrar
     private float posicionAnteriorX;
     private float posicionAnteriorY;
@@ -86,6 +89,7 @@ public class PantallaGranja extends ScreenAdapter {
     private Rectangle zonaDormir;
     private Rectangle zonaTienda;
     private Rectangle zonaComprar;
+    private Rectangle zonaSalir;
     
     private Inventario inventario;
     private GestorInventario gestorInventario;
@@ -97,36 +101,38 @@ public class PantallaGranja extends ScreenAdapter {
     private ControlTienda controlTienda;
     
     private GestorAudio gestorAudio;
-    private Window ventanaMensaje;
-    private Label textoMensaje;
+
 
     public PantallaGranja() {
 
-        batch = new SpriteBatch();
-        jugador = new Personaje(125, 125);
-        shapeRenderer = new ShapeRenderer();
+            batch = new SpriteBatch();
+            jugador = new Personaje(125, 125);
+            shapeRenderer = new ShapeRenderer();
 
-        // =========================
-        // CÁMARA Y VIEWPORT
-        // =========================
+            // =========================
+            // CÁMARA Y VIEWPORT
+            // =========================
 
-        camara = new OrthographicCamera();
-        vp = new FitViewport(V_WIDTH, V_HEIGHT, camara);
-        vp.apply();
-        camara.zoom = 0.5f;
-        
-        hudCamara = new OrthographicCamera();
-        hudCamara.setToOrtho(false, V_WIDTH, V_HEIGHT);
-        font = new BitmapFont();
+            camara = new OrthographicCamera();
+            vp = new FitViewport(V_WIDTH, V_HEIGHT, camara);
+            vp.apply();
+            camara.zoom = 0.5f;
+            
+            hudCamara = new OrthographicCamera();
+            hudCamara.setToOrtho(false, V_WIDTH, V_HEIGHT);
+            font = new BitmapFont();
 
-        mapaGranja = new GestorMapa("pantallas/zona1/AgrariaMapa.tmx");
-        mapaTienda = new GestorMapa("pantallas/tienda/interiorTienda.tmx");
+            mapaGranja = new GestorMapa("pantallas/zona1/AgrariaMapa.tmx");
+            mapaTienda = new GestorMapa("pantallas/tienda/interiorTienda.tmx");
+            mapaCasa = new GestorMapa("pantallas/casa/interiorCasa.tmx");
+       
        
         controlMapa = mapaGranja;
         
         zonaDormir = controlMapa.getZonaDormir();
         zonaTienda = controlMapa.getZonaTienda();
         zonaComprar = controlMapa.getZonaComprar();
+        zonaSalir = controlMapa.getZonaSalir();
         
         this.inventario = new Inventario(10);
         this.gestorInventario = new GestorInventario(inventario);
@@ -165,6 +171,7 @@ public class PantallaGranja extends ScreenAdapter {
         
         gestorAudio = new GestorAudio();
         gestorAudio.reproducirMusicaFondo();
+        
     }
 
     // Carga automáticamente las texturas de todos los tipos de cultivo existentes.
@@ -256,6 +263,17 @@ public class PantallaGranja extends ScreenAdapter {
         if (cosechado != null) {
             TipoCultivo tipo = cosechado.getTipo();
             Item itemCosecha = tipo.crearItemCosecha();
+            
+         // Si está podrido, usamos siempre el item genérico unificado
+            if (cosechado.isPodrido()) {
+            	
+                itemCosecha = tipo.crearItemPodrido(); 
+                
+            } else {
+            	
+                itemCosecha = tipo.crearItemCosecha(); 
+                
+            }
 
             boolean guardado = inventario.agregarItem(itemCosecha, 1);
 
@@ -275,7 +293,10 @@ public class PantallaGranja extends ScreenAdapter {
     
     
     public void procesarDormir() {
+    	
 
+        System.out.println("SE EJECUTÓ procesarDormir()");
+    	
         if (!estaCercaDeLaCasa()) {
             return;
         }
@@ -284,9 +305,14 @@ public class PantallaGranja extends ScreenAdapter {
             System.out.println("Todavía es temprano para dormir.");
             return;
         }
-
+        System.out.println("imiciando cicloSueño()");
         controlSueno.iniciarDormir(reloj, 6);
+        controlClima.sortearClimaDiario();
+        
     }
+    
+    
+    
     
     public boolean estaCercaDeLaCasa() {
         if (zonaDormir == null) {
@@ -298,11 +324,16 @@ public class PantallaGranja extends ScreenAdapter {
         );
     }
     
+    
+    
+    
     public void intentarEntrarSalirTienda() {
         if (!enTienda) {
             // Si estamos afuera, SOLO entramos si estamos cerca de la zona
             if (estaCercaDeLaTienda()) {
+            	
                 entrarSalirTienda();
+                
             } else {
                 System.out.println("-> Tenés que estar cerca de la tienda para entrar.");
             }
@@ -321,49 +352,77 @@ public class PantallaGranja extends ScreenAdapter {
             posicionAnteriorY = jugador.getY();
 
             controlMapa = mapaTienda;
-            jugador.setPosicion(10, 120);
-            enTienda = true;
+            jugador.setPosicion(80, 30);
             
-         // Cambiá el zoom para que la tienda se vea completa y alejada (ej: 1.0f o el que prefieras)
-//            camara.zoom = 0.8f;
+            System.out.println("Posición X: " + jugador.getX());
+            System.out.println("Posición Y: " + jugador.getY());
+            System.out.println("Colisiones tienda: " + mapaTienda.getColisionesMapa().size);
+            
+            enTienda = true;
 
         } else {
+        	
             System.out.println("SALIENDO A LA GRANJA");
             controlMapa = mapaGranja;
-            jugador.setPosicion(posicionAnteriorX, posicionAnteriorY);
+            jugador.setPosicion(posicionAnteriorX, posicionAnteriorY -15);
             enTienda = false;
+            
         }
 
         // Actualizar referencias del mapa actual
         zonaDormir = controlMapa.getZonaDormir();
         zonaTienda = controlMapa.getZonaTienda();
         zonaComprar = controlMapa.getZonaComprar();
+        zonaSalir = controlMapa.getZonaSalir();
     }
     
     public void procesarAbrirTienda() {
-        if (!estaCercaDeComprar()) {
-            System.out.println("-> Tenés que pararte frente al mostrador para comprar.");
-            return;
+
+    	
+    	if (estaCercaDeComprar()) {
+            if (controlTienda.estaAbierta()) {
+                controlTienda.cerrar();
+            } else {
+                controlTienda.abrir();
+            }
+        } else {
+            System.out.println("-> Tenés que estar cerca del mostrador para abrir o cerrar la tienda.");
         }
-        
-        controlTienda.abrir();
+    	
     }
+    
+    
+
 
     
     public boolean estaCercaDeLaTienda() {
+    	
         if (zonaTienda == null) {
             return false;
+            
         }
         return zonaTienda.contains(
                 jugador.getCentroX(),
                 jugador.getPiesY()
         );
     }
+    
     public boolean estaCercaDeComprar() {
         if (zonaComprar == null) {
             return false;
         }
         return zonaComprar.contains(
+                jugador.getCentroX(),
+                jugador.getPiesY()
+        );
+    }
+    
+    public boolean estaCercaDeSalir() {
+    	
+        if (zonaSalir == null) {
+            return false;
+        }
+        return zonaSalir.contains(
                 jugador.getCentroX(),
                 jugador.getPiesY()
         );
@@ -375,6 +434,13 @@ public class PantallaGranja extends ScreenAdapter {
         controlClima.actualizar(delta);
         controlSueno.actualizar(delta, reloj, gestorCultivos);
 
+     // Forzar sueño automáticamente a las 02:00 AM
+        if (reloj.getHoras() == 2 && !controlSueno.estaDurmiendo()) {
+            System.out.println("¡Te dieron las 2:00 AM! Te desmayás y te vas a dormir hasta más tarde.");
+            // Le pasamos la hora de despertar tarde (las 10:00 AM)
+            controlSueno.iniciarDormir(reloj, 10); 
+        }
+        
         if (!controlSueno.estaDurmiendo()) {
             int minutosPasados = reloj.actualizar(delta);
             if (minutosPasados > 0) {
@@ -383,6 +449,30 @@ public class PantallaGranja extends ScreenAdapter {
         }
         
         jugador.actualizar(delta, controlMapa.getColisionesMapa(), controlMapa.getAnchoMapaPixels(), controlMapa.getAltoMapaPixels());
+        
+        
+        
+        if (enCasa) {
+            // Si estamos adentro y pisamos la zona de salida, salimos automáticamente
+            if (estaCercaDeSalir()) {
+                entrarSalirTienda();
+            }
+        }
+        
+        
+        
+        if (!enTienda) {
+            // Si estamos afuera y pisamos la zona de la tienda, entramos automáticamente
+            if (estaCercaDeLaTienda()) {
+                entrarSalirTienda();
+            }
+        } else {
+            // Si estamos adentro y pisamos la zona de salida, salimos automáticamente
+            if (estaCercaDeSalir()) {
+                entrarSalirTienda();
+            }
+        }
+        
         actualizarCamara();
      // =========================
      // DIBUJAR MAPA Y PERSONAJE
@@ -401,10 +491,15 @@ public class PantallaGranja extends ScreenAdapter {
 
      // Dibujar al jugador en ambos mapas
      jugador.renderizar(batch);
+     
 
      batch.end();
 
      controlMapa.renderArriba();
+     
+  // En el render() de PantallaGranja:
+     controlClima.actualizar(delta);
+
 
         // Efectos visuales de clima
         controlClima.renderizarOscurecimiento(shapeRenderer, camara, vp.getWorldWidth(), vp.getWorldHeight());

@@ -46,16 +46,23 @@ public class ControlClima {
         animacionLluvia.setPlayMode(Animation.PlayMode.LOOP);
     }
 
-    public void actualizar(float delta) {
-        if (Gdx.input.isKeyJustPressed(Keys.L)) {
-            lluviaActiva = !lluviaActiva;
-            System.out.println("-> Clima cambiando...");
-            if (lluviaActiva && gestorCultivos != null) {
+    public void sortearClimaDiario() {
+        // MathUtils.random() da un valor entre 0.0 y 1.0
+        float probabilidadLluvia = 0.20f; 
+        lluviaActiva = MathUtils.random() < probabilidadLluvia;
+
+        if (lluviaActiva) {
+            System.out.println("-> ¡Hoy va a llover!");
+            if (gestorCultivos != null) {
                 gestorCultivos.hacerLlover();
-                System.out.println("2. Llamando a hacerLlover() en GestorCultivos.");
             }
-            
+        } else {
+            System.out.println("-> Hoy el día estará despejado.");
         }
+    }
+    
+    public void actualizar(float delta) {
+        
 
         float velocidadTransicion = 0.5f; 
         if (lluviaActiva) {

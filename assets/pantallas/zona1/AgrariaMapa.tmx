@@ -435,10 +435,10 @@
   </layer>
  </group>
  <objectgroup id="58" name="zonaDormir">
-  <object id="95" name="zonaDormir" x="15.5" y="32" width="112" height="96"/>
+  <object id="95" name="zonaDormir" x="15.5" y="32" width="112" height="109.333"/>
  </objectgroup>
  <objectgroup id="63" name="zonaTienda">
-  <object id="108" name="zonaTienda" x="624.5" y="0" width="95" height="127.5"/>
+  <object id="108" name="zonaTienda" x="653.167" y="86" width="21" height="36.8333"/>
  </objectgroup>
  <group id="24" name="arriba">
   <layer id="62" name="techoTienda" width="48" height="34">

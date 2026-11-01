@@ -46,9 +46,7 @@ public class Cultivo {
      */
     
     public void pudrir() {
-        if (!isCosechable()) { // Opcional: ¿solo se pudren si están creciendo?
-            this.podrido = true;
-        }
+        this.podrido = true;
     }
 
     public boolean isPodrido() {

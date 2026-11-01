@@ -8,6 +8,7 @@ public class GestorAudio {
 	private Sound sonidoPlantar;
 	private Sound sonidoCosechar;
 	private Sound apretarBoton;
+	private Sound sonidoLluvia;
 
     public GestorAudio() {
         // Cargar música de fondo (loop)
@@ -18,6 +19,7 @@ public class GestorAudio {
         // Cargar efectos cortos (WAV)
         sonidoPlantar = Gdx.audio.newSound(Gdx.files.internal("sonidos/plantar.wav"));
         apretarBoton = Gdx.audio.newSound(Gdx.files.internal("sonidos/apretarBoton.wav"));
+//        sonidoLluvia = Gdx.audio.newSound(Gdx.files.internal("sonidos/lluvia.wav"));
       //  sonidoCosechar = Gdx.audio.newSound(Gdx.files.internal("sonidos/cosechar.wav"));
         // sonidomoneda = Gdx.audio.newSound(Gdx.files.internal("sonidos/moneda.wav"));
     }
@@ -57,6 +59,14 @@ public class GestorAudio {
         }
     	
     }
+//    
+//    public void reproducirsonidoLluvia() {
+//    	
+//    	if (sonidoLluvia != null) {
+//    		sonidoLluvia.play(1.0f);
+//        }
+//    	
+//    }
     
     public void dispose() {
         if (musicaFondo != null) {

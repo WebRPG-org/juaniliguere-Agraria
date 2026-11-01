@@ -35,4 +35,16 @@ public class ControlTienda {
         ventana = new VentanaTienda(stage, billetera, inventario, skin);
     }
     
+    public void cerrar() {
+        if (ventana != null) {
+            ventana.cerrarVentana(); // Llama al método que limpia la ventana del Stage
+            ventana = null;          // Limpiamos la referencia para poder abrirla de cero después
+        }
+        System.out.println("-> Tienda cerrada.");
+    }
+    
+    public boolean estaAbierta() {
+        return ventana != null && ventana.estaAbierta();
+    }
+    
 }

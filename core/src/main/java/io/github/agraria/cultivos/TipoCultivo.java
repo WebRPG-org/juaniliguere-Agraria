@@ -50,6 +50,13 @@ public enum TipoCultivo {
 	        // Acá le pasás la ruta de la imagen del cultivo cosechado (la que ya usás)
 	        return new Item(id, nombre, TipoItem.COSECHA, this, rutaTexturaItem, 64);
 	    }
+	    
+	    public Item crearItemPodrido() {
+	        String id = "cultivo_podrido";
+	        // Le pasamos el nombre, precio de venta (5), tipo, la textura podrida y el stack máximo (64)
+	        return new Item(id, "Cultivo Podrido", TipoItem.COSECHA, null, "cultivos/cultivoPodrido.png", 64);
+	    }
+	    
 
 	    public String getNombre() { return nombre; }
 	    public int getPrecioCompra() { return precioCompra; }

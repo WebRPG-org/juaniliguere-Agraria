@@ -27,6 +27,11 @@ public class Item {
         this(id, nombre, tipo, rutaTextura, maxApilable);
         this.tipoCultivo = tipoCultivo;
     }
+    
+//    public Item crearItemPodrido() {
+//        // Suponiendo que tu constructor de Item recibe: (Nombre, PrecioVenta, Textura)
+//        return new Item(this.nombre + " Podrido", 5, texturasPodridas.get(this)); 
+//    }
 
     // Métodos de comprobación de tipo
     public boolean esSemilla() {

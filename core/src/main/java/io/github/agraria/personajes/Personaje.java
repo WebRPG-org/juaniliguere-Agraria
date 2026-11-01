@@ -85,6 +85,7 @@ public class Personaje {
     }
 
     public void actualizar(float delta, Array<Polygon> colisiones, float limiteAncho, float limiteAlto) {
+    	
         float xAnterior = x;
         float yAnterior = y;
 
@@ -107,7 +108,7 @@ public class Personaje {
             stateTime = 0f; // Reiniciar animación al frenar
         }
 
-        // --- LÓGICA DE MOVIMIENTO Y COLISIONES (Sin Cambios) ---
+        // LÓGICA DE MOVIMIENTO Y COLISIONES 
         x += dirX * VELOCIDAD * delta;
         hitboxPoly.setPosition(x, y);
         

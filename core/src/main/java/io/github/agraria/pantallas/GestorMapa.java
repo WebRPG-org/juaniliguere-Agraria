@@ -28,6 +28,7 @@ public class GestorMapa implements Disposable{
 	    private Rectangle zonaDormir;
 	    private Rectangle zonaTienda;
 	    private Rectangle zonaComprar;
+	    private Rectangle zonaSalir;
 	    
 	    // Dimensiones del mapa en píxeles
 	    private float anchoMapaPixels;
@@ -68,6 +69,7 @@ public class GestorMapa implements Disposable{
         cargarZonaDormir();
         cargarZonaTienda();
         cargarZonaComprar();
+        cargarZonaSalir();
         cargarCapas();
 	}
 	
@@ -189,7 +191,6 @@ public class GestorMapa implements Disposable{
 	    for (MapObject objeto : mapa.getLayers().get("zonaComprar").getObjects()) {
 	        if (objeto.getName() != null &&
 	            objeto.getName().equals("zonaComprar") &&
-	            objeto.getName().equals("zonaComprar") && // o el nombre que le hayas puesto en Tiled
 	            objeto instanceof RectangleMapObject) {
 
 	            zonaComprar = ((RectangleMapObject) objeto).getRectangle();
@@ -197,6 +198,23 @@ public class GestorMapa implements Disposable{
 	        }
 	    }
 	}
+	
+	private void cargarZonaSalir() {
+	    if (mapa.getLayers().get("zonaSalir") == null) {
+	        return;
+	    }
+
+	    for (MapObject objeto : mapa.getLayers().get("zonaSalir").getObjects()) {
+	        if (objeto.getName() != null &&
+	            objeto.getName().equals("zonaSalir") &&
+	            objeto instanceof RectangleMapObject) {
+
+	            zonaSalir = ((RectangleMapObject) objeto).getRectangle();
+	            break;
+	        }
+	    }
+	}
+	
     // =========================
     // CAPAS DEL MAPA
     // =========================
@@ -253,6 +271,7 @@ public class GestorMapa implements Disposable{
     public Rectangle getZonaDormir() { return zonaDormir; }
     public Rectangle getZonaTienda() { return zonaTienda; }
     public Rectangle getZonaComprar() { return zonaComprar; }
+    public Rectangle getZonaSalir() { return zonaSalir; }
     public float getAnchoMapaPixels() { return anchoMapaPixels; }
     public float getAltoMapaPixels() { return altoMapaPixels; }
     public int getMapWidthTiles() { return mapWidthTiles; }
