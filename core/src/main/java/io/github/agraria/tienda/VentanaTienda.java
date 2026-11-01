@@ -27,7 +27,7 @@ public class VentanaTienda {
         this.skin = skin;
 
         ventana = new Window("Tienda de la Granja", skin);
-        ventana.setSize(450, 400);
+        ventana.setSize(600, 500);
         ventana.setPosition(175, 100);
         ventana.setMovable(true);
         

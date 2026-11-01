@@ -1,6 +1,7 @@
 package io.github.agraria.pantallas;
 
 import io.github.agraria.cultivos.GestorCultivos;
+import io.github.agraria.sonidos.*;
 import io.github.agraria.cultivos.Cultivo;
 import io.github.agraria.cultivos.Parcela;
 import io.github.agraria.cultivos.TipoCultivo;
@@ -95,7 +96,7 @@ public class PantallaGranja extends ScreenAdapter {
     private Skin skinUi;   // Skin por defecto o la que uses para la UI
     private ControlTienda controlTienda;
     
-    
+    private GestorAudio gestorAudio;
     private Window ventanaMensaje;
     private Label textoMensaje;
 
@@ -161,6 +162,9 @@ public class PantallaGranja extends ScreenAdapter {
         reloj = new Reloj();
         controlClima = new ControlClima(gestorCultivos);
         controlSueno = new ControlSueno();
+        
+        gestorAudio = new GestorAudio();
+        gestorAudio.reproducirMusicaFondo();
     }
 
     // Carga automáticamente las texturas de todos los tipos de cultivo existentes.
@@ -226,6 +230,8 @@ public class PantallaGranja extends ScreenAdapter {
                 boolean exito = gestorCultivos.plantarEn(posMundo.x, posMundo.y, cultivoSeleccionado);
                 
                 if (exito) {
+                	
+                	gestorAudio.reproducirPlantar();
                     // Consumimos 1 unidad de la semilla de la mano
                     inventario.consumirSeleccionado(1);
                     System.out.println("-> ¡Semilla plantada con éxito!");
@@ -254,6 +260,9 @@ public class PantallaGranja extends ScreenAdapter {
             boolean guardado = inventario.agregarItem(itemCosecha, 1);
 
             if (guardado) {
+            	
+           // 	gestorAudio.reproducirCosechar();
+            	
                 System.out.println("-> Cosechado y guardado en inventario: " + tipo.getNombre());
             } else {
                 System.out.println("-> Cosechado pero el inventario está lleno.");
@@ -525,6 +534,10 @@ public class PantallaGranja extends ScreenAdapter {
         gestorInventario.dispose();
         stageUi.dispose();
         skinUi.dispose();
+        if (gestorAudio != null) {
+            gestorAudio.dispose();
+        }
+   
 
         for (Texture textura : texturasCultivos.values()) {
             textura.dispose();
