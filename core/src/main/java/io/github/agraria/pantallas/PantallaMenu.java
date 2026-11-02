@@ -44,7 +44,7 @@ public class PantallaMenu implements Screen {
     @Override
     public void show() {
         // 1. Cargar el mapa Tiled
-        map = new TmxMapLoader().load("pantallas/menu/AgrariaMenuInicio.tmx");
+        map = new TmxMapLoader().load("pantallas/menu/AgrariaMenu.tmx");
 
         // 2. Configurar cámara y viewport con las medidas reales del mapa
         camera = new OrthographicCamera();
@@ -147,11 +147,11 @@ public class PantallaMenu implements Screen {
         // Agregar los botones a la tabla con tamaño y separación (padding)
         table.add(btnJugar).width(126).height(32).padBottom(10);
         table.row();
-        table.add(btnConfiguracion).width(126).height(32).padBottom(10);
+        table.add(btnConfiguracion).width(126).height(32).padBottom(15);
         table.row();
-        table.add(btnControles).width(126).height(32).padBottom(10);
+        table.add(btnControles).width(126).height(32).padBottom(5);
         table.row();
-        table.add(btnSalir).width(126).height(32).padBottom(10);
+        table.add(btnSalir).width(126).height(32).padBottom(-65).padLeft(35);
         table.row();
     }
 

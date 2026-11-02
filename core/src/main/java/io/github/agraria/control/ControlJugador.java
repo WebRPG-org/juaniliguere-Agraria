@@ -9,79 +9,68 @@ import io.github.agraria.pantallas.PantallaGranja;
 import io.github.agraria.personajes.Personaje;
 import io.github.agraria.tienda.VentanaTienda;
 
-	public class ControlJugador extends InputAdapter {
-		
-		/*Esta clase lo que hace es escuchar el teclado y generar el movimiento del personaje*/
-	    private Personaje jugador;
-	    private PantallaGranja pantalla;
-	    private Inventario inventario;
+public class ControlJugador extends InputAdapter {
+    
+    private Personaje jugador;
+    private PantallaGranja pantalla;
+    private Inventario inventario;
 
-	    public ControlJugador(Personaje jugador, PantallaGranja pantalla, Inventario inventario) {
-	        this.jugador = jugador;
-	        this.pantalla = pantalla;	        
-	        this.inventario = inventario;
-	    }
+    public ControlJugador(Personaje jugador, PantallaGranja pantalla, Inventario inventario) {
+        this.jugador = jugador;
+        this.pantalla = pantalla;        
+        this.inventario = inventario;
+    }
 
-	    // LibGDX ejecuta esto SOLO cuando APRETÁS una tecla
-	    @Override
-	    public boolean keyDown(int keycode) { 
-	    	
-	        if (keycode == Keys.W || keycode == Keys.UP)    jugador.dirY = 1;
-	        if (keycode == Keys.S || keycode == Keys.DOWN)  jugador.dirY =-1;
-	        if (keycode == Keys.A || keycode == Keys.LEFT)  jugador.dirX = -1;
-	        if (keycode == Keys.D || keycode == Keys.RIGHT) jugador.dirX = 1;
-	        if (keycode == Keys.Z) pantalla.procesarDormir();       
-//	        if (keycode == Keys.P) pantalla.intentarEntrarSalirTienda();
-	        if (keycode == Keys.T) pantalla.procesarAbrirTienda();
-	        
-	        // Selección del inventario
-	        if (keycode >= Keys.NUM_1 && keycode <= Keys.NUM_9) {
-	        	
-	            inventario.setCasillaSeleccionada(keycode - Keys.NUM_1);
-	            
-	        }
+    // --- MANEJO DE MOVIMIENTO FLUIDO EN DIAGONAL ---
+    // En lugar de depender de keyUp/keyDown para las direcciones, 
+    // consultamos el teclado en cada frame.
+    public void actualizarMovimiento() {
+        int dirX = 0;
+        int dirY = 0;
 
-	        if (keycode == Keys.NUM_0) {
-	            inventario.setCasillaSeleccionada(9);
-	        }
-	        
-	        return true;
-	        
-	    }
+        if (Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.UP))    dirY = 1;
+        if (Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.DOWN))  dirY = -1;
+        if (Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT))  dirX = -1;
+        if (Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT)) dirX = 1;
 
-	    // LibGDX ejecuta esto SOLO cuando SUELTAS una tecla
-	    @Override
-	    public boolean keyUp(int keycode) { 
-	    	
-	        if (keycode == Keys.W || keycode == Keys.UP)    jugador.dirY = 0;
-	        if (keycode == Keys.S || keycode == Keys.DOWN)  jugador.dirY = 0;
-	        if (keycode == Keys.A || keycode == Keys.LEFT)  jugador.dirX = 0;
-	        if (keycode == Keys.D || keycode == Keys.RIGHT) jugador.dirX = 0;
+        jugador.dirX = dirX;
+        jugador.dirY = dirY;
+    }
 
-	        
-	        return true;
-	    }
-	    
-	    
-	    @Override
-	    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-	        if (button == com.badlogic.gdx.Input.Buttons.LEFT) {
-	        	
-	            pantalla.procesarCultivar(screenX, screenY);
-	            return true;
-	        
-	        } else if(button == com.badlogic.gdx.Input.Buttons.RIGHT) {
+    // LibGDX ejecuta esto SOLO cuando APRETÁS una tecla (ideal para acciones puntuales)
+    @Override
+    public boolean keyDown(int keycode) {  
+        
+        if (keycode == Keys.Z) pantalla.procesarDormir();       
+        if (keycode == Keys.T) pantalla.procesarAbrirTienda();
+        
+        // Selección del inventario
+        if (keycode >= Keys.NUM_1 && keycode <= Keys.NUM_9) {
+            inventario.setCasillaSeleccionada(keycode - Keys.NUM_1);
+        }
 
-	            pantalla.procesarCosechar(screenX, screenY);
-	            return true;
-	        	
-	        } 
-	        
-	        
-	        return false;
-	    }
-	    	    
-	}
-	
+        if (keycode == Keys.NUM_0) {
+            inventario.setCasillaSeleccionada(9);
+        }
+        
+        return true;
+    }
 
-	
+    // Ya no necesitamos apagar las direcciones en keyUp porque se actualizan solas por frame.
+    @Override
+    public boolean keyUp(int keycode) {  
+        return false;
+    }
+    
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        if (button == com.badlogic.gdx.Input.Buttons.LEFT) {
+            pantalla.procesarCultivar(screenX, screenY);
+            return true;
+        } else if (button == com.badlogic.gdx.Input.Buttons.RIGHT) {
+            pantalla.procesarCosechar(screenX, screenY);
+            return true;
+        }       
+        return false;
+    }
+}
