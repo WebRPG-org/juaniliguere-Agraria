@@ -76,8 +76,8 @@ public class ControlClima {
         }
     }
 
-    public void renderizarOscurecimiento(ShapeRenderer shapeRenderer, OrthographicCamera camara, float viewportWidth, float viewportHeight) {
-        if (intensidadLluvia <= 0f) return;
+    public void renderizarOscurecimiento(ShapeRenderer shapeRenderer, OrthographicCamera camara, float viewportWidth, float viewportHeight, boolean mostrarEfectos) {
+        if (!mostrarEfectos || intensidadLluvia <= 0f) return;
 
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -95,8 +95,8 @@ public class ControlClima {
         Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 
-    public void renderizarEfectoVisual(SpriteBatch batch, OrthographicCamera hudCamara, int vWidth, int vHeight) {
-        if (intensidadLluvia <= 0f) return;
+    public void renderizarEfectoVisual(SpriteBatch batch, OrthographicCamera hudCamara, int vWidth, int vHeight, boolean mostrarEfectos) {
+        if (!mostrarEfectos || intensidadLluvia <= 0f) return;
 
         batch.setProjectionMatrix(hudCamara.combined);
         batch.begin();

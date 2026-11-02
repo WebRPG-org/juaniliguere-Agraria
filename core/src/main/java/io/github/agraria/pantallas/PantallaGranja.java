@@ -527,8 +527,20 @@ public class PantallaGranja extends ScreenAdapter {
         controlClima.actualizar(delta);
 
         // Efectos visuales de clima
-        controlClima.renderizarOscurecimiento(shapeRenderer, camara, vp.getWorldWidth(), vp.getWorldHeight());
-        controlClima.renderizarEfectoVisual(batch, hudCamara, V_WIDTH, V_HEIGHT);
+        boolean mostrarClima = !enTienda && !enCasa;
+
+        controlClima.renderizarOscurecimiento(
+            shapeRenderer, camara,
+            vp.getWorldWidth(), vp.getWorldHeight(),
+            mostrarClima
+        );
+
+        controlClima.renderizarEfectoVisual(
+            batch, hudCamara,
+            V_WIDTH, V_HEIGHT,
+            mostrarClima
+        );
+        
 
         // ==========================================
         // LÓGICA DE MENSAJES FLOTANTES (PROMPTS MUNDIALES)
