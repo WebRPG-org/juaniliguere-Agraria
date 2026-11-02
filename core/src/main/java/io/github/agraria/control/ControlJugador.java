@@ -14,6 +14,8 @@ public class ControlJugador extends InputAdapter {
     private Personaje jugador;
     private PantallaGranja pantalla;
     private Inventario inventario;
+ // Bandera para congelar al jugador (por ejemplo, cuando abre la tienda)
+    private boolean movimientoBloqueado = false;
 
     public ControlJugador(Personaje jugador, PantallaGranja pantalla, Inventario inventario) {
         this.jugador = jugador;
@@ -21,22 +23,53 @@ public class ControlJugador extends InputAdapter {
         this.inventario = inventario;
     }
 
-    // --- MANEJO DE MOVIMIENTO FLUIDO EN DIAGONAL ---
-    // En lugar de depender de keyUp/keyDown para las direcciones, 
-    // consultamos el teclado en cada frame.
+    public void setMovimientoBloqueado(boolean bloqueado) {
+        this.movimientoBloqueado = bloqueado;
+
+        if (bloqueado) {
+            jugador.dirX = 0;
+            jugador.dirY = 0;
+        }
+    }
+    
     public void actualizarMovimiento() {
+
+        if (movimientoBloqueado) {
+            jugador.dirX = 0;
+            jugador.dirY = 0;
+            return;
+        }
+
         int dirX = 0;
         int dirY = 0;
 
-        if (Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.UP))    dirY = 1;
-        if (Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.DOWN))  dirY = -1;
-        if (Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT))  dirX = -1;
-        if (Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT)) dirX = 1;
+        boolean arriba = Gdx.input.isKeyPressed(Keys.W)
+                || Gdx.input.isKeyPressed(Keys.UP);
+
+        boolean abajo = Gdx.input.isKeyPressed(Keys.S)
+                || Gdx.input.isKeyPressed(Keys.DOWN);
+
+        boolean izquierda = Gdx.input.isKeyPressed(Keys.A)
+                || Gdx.input.isKeyPressed(Keys.LEFT);
+
+        boolean derecha = Gdx.input.isKeyPressed(Keys.D)
+                || Gdx.input.isKeyPressed(Keys.RIGHT);
+
+        // Movimiento exclusivamente horizontal o vertical
+        if (arriba && !abajo) {
+            dirY = 1;
+        } else if (abajo && !arriba) {
+            dirY = -1;
+        } else if (izquierda && !derecha) {
+            dirX = -1;
+        } else if (derecha && !izquierda) {
+            dirX = 1;
+        }
 
         jugador.dirX = dirX;
         jugador.dirY = dirY;
     }
-
+    
     // LibGDX ejecuta esto SOLO cuando APRETÁS una tecla (ideal para acciones puntuales)
     @Override
     public boolean keyDown(int keycode) {  
@@ -64,6 +97,12 @@ public class ControlJugador extends InputAdapter {
     
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+    	
+        if (movimientoBloqueado) {
+            return true;
+        }
+        
+        
         if (button == com.badlogic.gdx.Input.Buttons.LEFT) {
             pantalla.procesarCultivar(screenX, screenY);
             return true;

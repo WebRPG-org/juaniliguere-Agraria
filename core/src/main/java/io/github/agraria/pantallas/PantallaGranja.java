@@ -99,10 +99,10 @@ public class PantallaGranja extends ScreenAdapter {
     // --- ECONOMÍA Y TIENDA ---
     private Billetera billetera;
     private Stage stageUi; // Stage independiente para manejar la UI de la tienda
-    private Skin skinUi;   // Skin por defecto o la que uses para la UI
+    private Skin skinUi;  
+    private ControlJugador controlJugador;// Skin por defecto o la que uses para la UI
     private ControlTienda controlTienda;
     
-    private ControlJugador controlJugadorRef; // Referencia para actualizar el movimiento fluido
     private GestorAudio gestorAudio;
 
     // --- VARIABLES DE TRANSICIÓN A NEGRO ---
@@ -152,8 +152,6 @@ public class PantallaGranja extends ScreenAdapter {
      // Stage con la cámara fija del HUD para que no se mueva con el zoom del mapa
         stageUi = new Stage(new FitViewport(V_WIDTH, V_HEIGHT, hudCamara));
         skinUi = new Skin(Gdx.files.internal("uiskin.json"));
-        
-        this.controlTienda = new ControlTienda(stageUi, billetera, inventario, skinUi);
 
         // Inicializar el gestor de mensajes flotantes
         this.gestorInteraccion = new GestorInteraccion(stageUi, skinUi);
@@ -223,13 +221,21 @@ public class PantallaGranja extends ScreenAdapter {
 
     @Override
     public void show() {
-        ControlJugador controlador = new ControlJugador(jugador, this, inventario);
-        this.controlJugadorRef = controlador; // Guardamos la referencia para el movimiento fluido
+
+        controlJugador = new ControlJugador(jugador, this, inventario);
+
+        controlTienda = new ControlTienda(
+            stageUi,
+            billetera,
+            inventario,
+            skinUi,
+            controlJugador
+        );
         
         // Combinamos la UI y el control del jugador para que ambos reciban eventos
         com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
         multiplexer.addProcessor(stageUi);   // Primero la UI (botones de la tienda)
-        multiplexer.addProcessor(controlador); // Después el juego
+        multiplexer.addProcessor(controlJugador); // Después el juego
         
         Gdx.input.setInputProcessor(multiplexer);
     }
@@ -445,9 +451,8 @@ public class PantallaGranja extends ScreenAdapter {
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
 
-        // --- ACTUALIZAR MOVIMIENTO FLUIDO DEL JUGADOR ---
-        if (controlJugadorRef != null) {
-            controlJugadorRef.actualizarMovimiento();
+        if (controlJugador != null) {
+            controlJugador.actualizarMovimiento();
         }
 
         // --- DETECTAR TECLA ESC PARA INICIAR TRANSICIÓN A NEGRO Y VOLVER AL MENÚ ---

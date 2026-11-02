@@ -118,7 +118,14 @@ public class PantallaMenu implements Screen {
 
         ImageButton btnControles = new ImageButton(estiloControles);
         
-        
+        // Acción al hacer clic en "Controls"
+        btnControles.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Activamos la bandera para que comience el fundido a negro
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaControles());
+            }
+        });
         
         TextureRegion regionBtnSalirNormal = new TextureRegion(tilesetTexture, 130, 512, 126, 32); 
         TextureRegion regionBtnSalirPress = new TextureRegion(tilesetTexture, 130, 545, 126, 30);
@@ -129,15 +136,14 @@ public class PantallaMenu implements Screen {
 
         ImageButton btnSalir = new ImageButton(estiloSalir);
         
-     // Acción al hacer clic en "Controls"
-        btnControles.addListener(new ClickListener() {
+
+     // Acción al hacer clic en "Salir"
+        btnSalir.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Activamos la bandera para que comience el fundido a negro
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaControles());
+                Gdx.app.exit();
             }
         });
-        
 
         // Crear una tabla para organizar y posicionar los botones en pantalla
         Table table = new Table();

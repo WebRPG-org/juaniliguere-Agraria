@@ -15,14 +15,16 @@ public class ControlTienda {
     private Skin skin;
 
     private VentanaTienda ventana;
+    private ControlJugador controlJugador;
 
     public ControlTienda(Stage stage, Billetera billetera,
-                         Inventario inventario, Skin skin) {
+                         Inventario inventario, Skin skin, ControlJugador controlJugador) {
 
         this.stage = stage;
         this.billetera = billetera;
         this.inventario = inventario;
         this.skin = skin;
+        this.controlJugador = controlJugador;
     }
 
     public void abrir() {
@@ -30,9 +32,15 @@ public class ControlTienda {
         // Evitar crear varias ventanas
         if (ventana != null && ventana.estaAbierta()) {
             return;
+            
         }
 
         ventana = new VentanaTienda(stage, billetera, inventario, skin);
+        
+        
+        if (controlJugador != null) {
+            controlJugador.setMovimientoBloqueado(true);
+        }
     }
     
     public void cerrar() {
@@ -40,10 +48,16 @@ public class ControlTienda {
             ventana.cerrarVentana(); // Llama al método que limpia la ventana del Stage
             ventana = null;          // Limpiamos la referencia para poder abrirla de cero después
         }
-        System.out.println("-> Tienda cerrada.");
+
+        
+        if (controlJugador != null) {
+            controlJugador.setMovimientoBloqueado(false);
+        }
+        
     }
     
     public boolean estaAbierta() {
+    	
         return ventana != null && ventana.estaAbierta();
     }
     
