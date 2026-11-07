@@ -13,6 +13,7 @@ import io.github.agraria.economia.Billetera;
 import io.github.agraria.tienda.VentanaTienda;
 import io.github.agraria.ui.GestorInteraccion;
 import io.github.agraria.ui.InteraccionPrompt;
+import io.github.agraria.control.ControlCultivos;
 import io.github.agraria.control.ControlJugador;
 import io.github.agraria.control.ControlTienda;
 import io.github.agraria.personajes.Personaje;
@@ -82,6 +83,7 @@ public class PantallaGranja extends ScreenAdapter {
     private Reloj reloj;
     private ControlSueno controlSueno;
     private ControlClima controlClima;
+    private ControlCultivos controlCultivos;
     
     // --- HUD Y TEXTO ---
     private BitmapFont font;
@@ -96,7 +98,6 @@ public class PantallaGranja extends ScreenAdapter {
     private Inventario inventario;
     private GestorInventario gestorInventario;
 
-    // --- ECONOMÍA Y TIENDA ---
     private Billetera billetera;
     private Stage stageUi; // Stage independiente para manejar la UI de la tienda
     private Skin skinUi;  
@@ -105,12 +106,12 @@ public class PantallaGranja extends ScreenAdapter {
     
     private GestorAudio gestorAudio;
 
-    // --- VARIABLES DE TRANSICIÓN A NEGRO ---
     private boolean isSaliendoAlMenu = false;
     private float fadeAlpha = 0f;
 
-    // --- GESTOR DE MENSAJES FLOTANTES (PROMPTS) ---
     private GestorInteraccion gestorInteraccion;
+    
+
 
     public PantallaGranja() {
 
@@ -182,6 +183,12 @@ public class PantallaGranja extends ScreenAdapter {
         gestorAudio = new GestorAudio();
         gestorAudio.reproducirMusicaFondo();
         
+        
+        controlCultivos = new ControlCultivos(
+        	    gestorCultivos,
+        	    inventario,
+        	    gestorAudio
+        	);
     }
 
     // Carga automáticamente las texturas de todos los tipos de cultivo existentes.
@@ -222,7 +229,20 @@ public class PantallaGranja extends ScreenAdapter {
     @Override
     public void show() {
 
-        controlJugador = new ControlJugador(jugador, this, inventario);
+    	controlJugador = new ControlJugador(jugador, inventario);
+    	
+    	// Acciones del jugador en la granja
+    	controlJugador.setAccionDormir(() -> procesarDormir());
+
+    	controlJugador.setAccionTienda(() -> procesarAbrirTienda());
+
+    	controlJugador.setAccionCultivar(
+    	    (screenX, screenY) -> procesarCultivar(screenX, screenY)
+    	);
+
+    	controlJugador.setAccionCosechar(
+    	    (screenX, screenY) -> procesarCosechar(screenX, screenY)
+    	);
 
         controlTienda = new ControlTienda(
             stageUi,
@@ -241,72 +261,27 @@ public class PantallaGranja extends ScreenAdapter {
     }
 
     public void procesarCultivar(int screenX, int screenY) {
-        Vector3 posMundo = camara.unproject(new Vector3(screenX, screenY, 0));
-        Parcela parcela = gestorCultivos.getParcelaEnPx(posMundo.x, posMundo.y);
 
-        if (parcela == null) return;
+        Vector3 posicionMundo = camara.unproject(
+            new Vector3(screenX, screenY, 0)
+        );
 
-        if (!parcela.tieneCultivo() && parcela.isEsPlantable()) {
-            
-            // Obtenemos el tipo de cultivo que corresponde a la semilla seleccionada
-            TipoCultivo cultivoSeleccionado = inventario.getCultivoSeleccionado();
-
-            if (cultivoSeleccionado != null) {
-                // Plantamos en la parcela
-                boolean exito = gestorCultivos.plantarEn(posMundo.x, posMundo.y, cultivoSeleccionado);
-                
-                if (exito) {
-                	
-                	gestorAudio.reproducirPlantar();
-                    // Consumimos 1 unidad de la semilla de la mano
-                    inventario.consumirSeleccionado(1);
-                    System.out.println("-> ¡Semilla plantada con éxito!");
-                }
-            } else {
-                System.out.println("-> No tenés seleccionada ninguna semilla válida en la mano.");
-            }
-        }
+        controlCultivos.procesarCultivar(
+            posicionMundo.x,
+            posicionMundo.y
+        );
     }
     
     public void procesarCosechar(int screenX, int screenY) {
-        Vector3 posMundo = camara.unproject(new Vector3(screenX, screenY, 0));
-        Parcela parcela = gestorCultivos.getParcelaEnPx(posMundo.x, posMundo.y);
 
-        if (parcela == null) {
-            System.out.println("-> No hay un cultivo cerca del clic.");
-            return;
-        }
+        Vector3 posicionMundo = camara.unproject(
+            new Vector3(screenX, screenY, 0)
+        );
 
-        Cultivo cosechado = parcela.cosechar();
-
-        if (cosechado != null) {
-            TipoCultivo tipo = cosechado.getTipo();
-            Item itemCosecha = tipo.crearItemCosecha();
-            
-         // Si está podrido, usamos siempre el item genérico unificado
-            if (cosechado.isPodrido()) {
-            	
-                itemCosecha = tipo.crearItemPodrido(); 
-                
-            } else {
-            	
-                itemCosecha = tipo.crearItemCosecha(); 
-                
-            }
-
-            boolean guardado = inventario.agregarItem(itemCosecha, 1);
-
-            if (guardado) {
-            	
-         // 	gestorAudio.reproducirCosechar();
-            	
-                System.out.println("-> Cosechado y guardado en inventario: " + tipo.getNombre());
-            } else {
-                System.out.println("-> Cosechado pero el inventario está lleno.");
-            }
-        } else {
-            System.out.println("-> El cultivo todavía no está listo.");
-        }
+        controlCultivos.procesarCosechar(
+            posicionMundo.x,
+            posicionMundo.y
+        );
     }
     
     
@@ -410,8 +385,6 @@ public class PantallaGranja extends ScreenAdapter {
     	
     }
     
-    
-
 
     
     public boolean estaCercaDeLaTienda() {
@@ -515,8 +488,12 @@ public class PantallaGranja extends ScreenAdapter {
         batch.setProjectionMatrix(camara.combined);
         batch.begin();
 
-        if (!enTienda) {
-            renderizarCultivos();
+        if (!enTienda && !enCasa) {
+            gestorCultivos.renderizar(
+                batch,
+                etapasCultivos,
+                texturasPodridas
+            );
         }
 
         jugador.renderizar(batch);
@@ -662,40 +639,6 @@ public class PantallaGranja extends ScreenAdapter {
         camara.update();
     }
 
-    private void renderizarCultivos() {
-        for (int fila = 0; fila < controlMapa.getMapHeightTiles(); fila++) {
-            for (int col = 0; col < controlMapa.getMapWidthTiles(); col++) {
-                Parcela parcela = gestorCultivos.getParcela(col, fila);
-
-                if (parcela == null || !parcela.tieneCultivo()) {
-                    continue;
-                }
-
-                Cultivo cultivo = parcela.getCultivoActual();
-                TipoCultivo tipo = cultivo.getTipo();
-
-                float xPx = col * controlMapa.getTileWidth();
-                float yPx = fila * controlMapa.getTileHeight();
-
-                float ancho = controlMapa.getTileWidth();
-                float alto = controlMapa.getTileHeight();
-
-                if (cultivo.isPodrido()) {
-                    Texture texturaPodrida = texturasPodridas.get(tipo);
-                    batch.draw(texturaPodrida, xPx, yPx, ancho, alto);
-                } else {
-                    int etapa = cultivo.getEtapaActual();
-                    TextureRegion[] etapas = etapasCultivos.get(tipo);
-
-                    if (etapas == null || etapa < 0 || etapa >= etapas.length) {
-                        continue;
-                    }
-
-                    batch.draw(etapas[etapa], xPx, yPx, ancho, alto);
-                }
-            }
-        }
-    }
 
     @Override
     public void resize(int width, int height) {
@@ -724,6 +667,9 @@ public class PantallaGranja extends ScreenAdapter {
         }
 
         for (Texture textura : texturasCultivos.values()) {
+            textura.dispose();
+        }
+        for (Texture textura : texturasPodridas.values()) {
             textura.dispose();
         }
     }

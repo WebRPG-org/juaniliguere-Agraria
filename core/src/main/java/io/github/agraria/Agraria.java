@@ -4,6 +4,7 @@ package io.github.agraria;
 import com.badlogic.gdx.Game;
 import io.github.agraria.pantallas.PantallaGranja;
 import io.github.agraria.pantallas.PantallaMenu;
+import io.github.agraria.sonidos.GestorAudio;
 import io.github.agraria.cultivos.TipoCultivo;
 
 public class Agraria extends Game {
@@ -11,12 +12,8 @@ public class Agraria extends Game {
 
     @Override
     public void create() {
-        // Como PantallaMenu usa Gdx.app.getApplicationListener() internamente, 
-        // no le hace falta recibir 'this' en el constructor.
         setScreen(new PantallaMenu());
     }
-    
-
     @Override
     public void render() {
         super.render(); // Redirige el loop a PantallaGranja.render(delta)

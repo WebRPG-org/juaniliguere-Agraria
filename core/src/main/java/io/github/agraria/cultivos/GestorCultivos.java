@@ -1,9 +1,13 @@
 package io.github.agraria.cultivos;
 
 import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.MapGroupLayer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.ObjectMap;
 
 public class GestorCultivos {
 
@@ -65,43 +69,6 @@ public class GestorCultivos {
 
         return matriz;
     }
-
-    /*public Parcela getParcelaCercana(float xPixel, float yPixel, float distanciaMaxima) {
-
-    int columnaCentro = xPixelAColumna(xPixel);
-    int filaCentro = yPixelAFila(yPixel);
-
-    Parcela parcelaMasCercana = null;
-    float distanciaMasCercana = Float.MAX_VALUE;
-
-    // Revisamos las parcelas cercanas al lugar donde hizo clic
-    for (int f = filaCentro - 1; f <= filaCentro + 1; f++) {
-        for (int c = columnaCentro - 1; c <= columnaCentro + 1; c++) {
-
-            if (!esCoordenadaValida(c, f)) {
-                continue;
-            }
-
-            float centroX = c * tamanoTilePixels + tamanoTilePixels / 2f;
-            float centroY = f * tamanoTilePixels + tamanoTilePixels / 2f;
-
-            float dx = xPixel - centroX;
-            float dy = yPixel - centroY;
-
-            float distancia = (float) Math.sqrt(dx * dx + dy * dy);
-
-            if (distancia <= distanciaMaxima &&
-                distancia < distanciaMasCercana) {
-
-                parcelaMasCercana = grilla[f][c];
-                distanciaMasCercana = distancia;
-            }
-        }
-    }
-
-    return parcelaMasCercana;
-}*/
-    
     
     // Crea una Parcela para cada posición de la matriz.
     
@@ -213,5 +180,43 @@ public class GestorCultivos {
             }
         }
     }
+    
+    
+    public void renderizar(
+            SpriteBatch batch,
+            ObjectMap<TipoCultivo, TextureRegion[]> etapasCultivos,
+            ObjectMap<TipoCultivo, Texture> texturasPodridas) {
+
+        for (int fila = 0; fila < filas; fila++) {
+            for (int col = 0; col < columnas; col++) {
+                Parcela parcela = grilla[fila][col];
+
+                if (parcela == null || !parcela.tieneCultivo()) {
+                    continue;
+                }
+
+                Cultivo cultivo = parcela.getCultivoActual();
+                TipoCultivo tipo = cultivo.getTipo();
+
+                float xPx = col * tamanoTilePixels;
+                float yPx = fila * tamanoTilePixels;
+
+                if (cultivo.isPodrido()) {
+                    com.badlogic.gdx.graphics.Texture texturaPodrida = texturasPodridas.get(tipo);
+                    if (texturaPodrida != null) {
+                        batch.draw(texturaPodrida, xPx, yPx, tamanoTilePixels, tamanoTilePixels);
+                    }
+                } else {
+                    int etapa = cultivo.getEtapaActual();
+                    com.badlogic.gdx.graphics.g2d.TextureRegion[] etapas = etapasCultivos.get(tipo);
+
+                    if (etapas != null && etapa >= 0 && etapa < etapas.length) {
+                        batch.draw(etapas[etapa], xPx, yPx, tamanoTilePixels, tamanoTilePixels);
+                    }
+                }
+            }
+        }
+    }
 }
+
 
