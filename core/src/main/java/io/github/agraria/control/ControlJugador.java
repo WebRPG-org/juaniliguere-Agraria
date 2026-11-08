@@ -99,6 +99,10 @@ public class ControlJugador extends InputAdapter {
     @Override
     public boolean keyDown(int keycode) {
 
+        if (keycode == Keys.T && accionTienda != null) {
+            accionTienda.run();
+        }
+        
         if (movimientoBloqueado) {
             return true;
         }
@@ -107,9 +111,6 @@ public class ControlJugador extends InputAdapter {
             accionDormir.run();
         }
 
-        if (keycode == Keys.T && accionTienda != null) {
-            accionTienda.run();
-        }
 
         // Selección del inventario
         if (keycode >= Keys.NUM_1 && keycode <= Keys.NUM_9) {

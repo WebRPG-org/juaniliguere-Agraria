@@ -2,17 +2,13 @@ package io.github.agraria.pantallas;
 
 import io.github.agraria.cultivos.GestorCultivos;
 import io.github.agraria.sonidos.*;
-import io.github.agraria.cultivos.Cultivo;
-import io.github.agraria.cultivos.Parcela;
 import io.github.agraria.cultivos.TipoCultivo;
-import io.github.agraria.elementos.Item;
 import io.github.agraria.eventos.*;
 import io.github.agraria.inventario.GestorInventario;
 import io.github.agraria.inventario.Inventario;
 import io.github.agraria.economia.Billetera;
-import io.github.agraria.tienda.VentanaTienda;
-import io.github.agraria.ui.GestorInteraccion;
-import io.github.agraria.ui.InteraccionPrompt;
+import io.github.agraria.ui.GestorHud;
+import io.github.agraria.ui.GestorPrompt;
 import io.github.agraria.control.ControlCultivos;
 import io.github.agraria.control.ControlEntrada;
 import io.github.agraria.control.ControlJugador;
@@ -22,7 +18,6 @@ import io.github.tiempo.Reloj;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.ScreenAdapter;
 
 import com.badlogic.gdx.graphics.Texture;
@@ -36,16 +31,12 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.graphics.GL20;
 
 public class PantallaGranja extends ScreenAdapter {
@@ -57,8 +48,6 @@ public class PantallaGranja extends ScreenAdapter {
     
     private GestorMapa mapaGranja;
     private PantallaTienda pantallaTienda;
-    private GestorMapa mapaCasa;
-
 
     private boolean enCasa = false;
 
@@ -106,10 +95,11 @@ public class PantallaGranja extends ScreenAdapter {
 
     private boolean isSaliendoAlMenu = false;
 
-
-    private GestorInteraccion gestorInteraccion;
+    private GestorPrompt gestorPrompt;
     
     private ControlEntrada controlEntrada;
+    
+    private GestorHud gestorHud;
 
     public PantallaGranja() {
 
@@ -132,7 +122,6 @@ public class PantallaGranja extends ScreenAdapter {
 
             mapaGranja = new GestorMapa("pantallas/zona1/AgrariaMapa.tmx");
             pantallaTienda = new PantallaTienda();
-            mapaCasa = new GestorMapa("pantallas/casa/interiorCasa.tmx");
        
         
         controlMapa = mapaGranja;
@@ -153,7 +142,7 @@ public class PantallaGranja extends ScreenAdapter {
         skinUi = new Skin(Gdx.files.internal("uiskin.json"));
 
         // Inicializar el gestor de mensajes flotantes
-        this.gestorInteraccion = new GestorInteraccion(stageUi, skinUi);
+        this.gestorPrompt = new GestorPrompt(stageUi, skinUi);
 
         // =========================
         // CONTROL DE CULTIVOS
@@ -177,16 +166,14 @@ public class PantallaGranja extends ScreenAdapter {
         reloj = new Reloj();
         controlClima = new ControlClima(gestorCultivos);
         controlSueno = new ControlSueno();
+        gestorHud = new GestorHud(inventario, V_WIDTH, V_HEIGHT);
         
         gestorAudio = new GestorAudio();
         gestorAudio.reproducirMusicaFondo();
         
         
-        controlCultivos = new ControlCultivos(
-        	    gestorCultivos,
-        	    inventario,
-        	    gestorAudio
-        	);
+        controlCultivos = new ControlCultivos(gestorCultivos, inventario, gestorAudio);
+        
     }
 
     // Carga automáticamente las texturas de todos los tipos de cultivo existentes.
@@ -243,13 +230,7 @@ public class PantallaGranja extends ScreenAdapter {
     	    (screenX, screenY) -> procesarCosechar(screenX, screenY)
     	);
 
-        controlTienda = new ControlTienda(
-            stageUi,
-            billetera,
-            inventario,
-            skinUi,
-            controlJugador
-        );
+        controlTienda = new ControlTienda(stageUi, billetera, inventario, skinUi, controlJugador);
         
         // Combinamos la UI y el control del jugador para que ambos reciban eventos
         com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
@@ -283,30 +264,23 @@ public class PantallaGranja extends ScreenAdapter {
             posicionMundo.y
         );
     }
-    
-    
-    
+     
     public void procesarDormir() {
-    	
-
-        System.out.println("SE EJECUTÓ procesarDormir()");
     	
         if (!estaCercaDeLaCasa()) {
             return;
         }
 
         if (!controlSueno.puedeDormir(reloj)) {
-            System.out.println("Todavía es temprano para dormir.");
             return;
         }
-        System.out.println("iniciando cicloSueño()");
+
         controlSueno.iniciarDormir(reloj, 6);
         controlClima.sortearClimaDiario();
         
     }
     
-    
-    
+
     
     public boolean estaCercaDeLaCasa() {
         if (zonaDormir == null) {
@@ -319,42 +293,30 @@ public class PantallaGranja extends ScreenAdapter {
     }
     
     
-    
-    
     public void intentarEntrarSalirTienda() {
         if (!pantallaTienda.estaDentro()) {
-            // Si estamos afuera, SOLO entramos si estamos cerca de la zona
-            if (estaCercaDeLaTienda()) {
+
+            if (pantallaTienda.estaCercaDeLaTienda(jugador, mapaGranja)) {
             	
                 entrarSalirTienda();
                 
-            } else {
-                System.out.println("-> Tenés que estar cerca de la tienda para entrar.");
-            }
+            } 
         } else {
             // Si ya estamos adentro, podemos salir directamente
             entrarSalirTienda();
         }
     }
     
-   
-
-
-    
     
     public void entrarSalirTienda() {
 
         if (!pantallaTienda.estaDentro()) {
-
-            System.out.println("ENTRANDO A LA TIENDA");
 
             pantallaTienda.entrar(jugador);
 
             controlMapa = pantallaTienda.getMapa();
 
         } else {
-
-            System.out.println("SALIENDO A LA GRANJA");
 
             pantallaTienda.salir(jugador);
 
@@ -368,53 +330,16 @@ public class PantallaGranja extends ScreenAdapter {
     }
     
     public void procesarAbrirTienda() {
-
     	
-    	if (estaCercaDeComprar()) {
+    	if (pantallaTienda.estaCercaDeComprar(jugador)) {
+    		
             if (controlTienda.estaAbierta()) {
                 controlTienda.cerrar();
             } else {
                 controlTienda.abrir();
             }
-        } else {
-            System.out.println("-> Tenés que estar cerca del mostrador para abrir o cerrar la tienda.");
         }
     	
-    }
-    
-
-    
-    public boolean estaCercaDeLaTienda() {
-    	
-        if (zonaTienda == null) {
-            return false;
-            
-        }
-        return zonaTienda.contains(
-                jugador.getCentroX(),
-                jugador.getPiesY()
-        );
-    }
-    
-    public boolean estaCercaDeComprar() {
-        if (zonaComprar == null) {
-            return false;
-        }
-        return zonaComprar.contains(
-                jugador.getCentroX(),
-                jugador.getPiesY()
-        );
-    }
-    
-    public boolean estaCercaDeSalir() {
-    	
-        if (zonaSalir == null) {
-            return false;
-        }
-        return zonaSalir.contains(
-                jugador.getCentroX(),
-                jugador.getPiesY()
-        );
     }
     
     @Override
@@ -425,11 +350,9 @@ public class PantallaGranja extends ScreenAdapter {
             controlJugador.actualizarMovimiento();
         }
 
-     // --- DETECTAR TECLA ESC A TRAVÉS DE ControlEntrada ---
         if (controlEntrada != null && controlEntrada.isSolicitioSalirMenu() && !isSaliendoAlMenu) {
 
             isSaliendoAlMenu = true;
-        	System.out.println("se abrio el menu");
         }
         
         if (isSaliendoAlMenu) {
@@ -440,11 +363,7 @@ public class PantallaGranja extends ScreenAdapter {
         controlClima.actualizar(delta);
         controlSueno.actualizar(delta, reloj, gestorCultivos);
 
-     // Forzar sueño automáticamente a las 02:00 AM
-        if (reloj.getHoras() == 2 && !controlSueno.estaDurmiendo()) {
-            System.out.println("¡Te dieron las 2:00 AM! Te desmayás y te vas a dormir hasta más tarde.");
-            controlSueno.iniciarDormir(reloj, 10); 
-        }
+        controlSueno.verificarDesmayoPorHorario(reloj);
         
         if (!controlSueno.estaDurmiendo()) {
             int minutosPasados = reloj.actualizar(delta);
@@ -456,14 +375,14 @@ public class PantallaGranja extends ScreenAdapter {
         jugador.actualizar(delta, controlMapa.getColisionesMapa(), controlMapa.getAnchoMapaPixels(), controlMapa.getAltoMapaPixels());
         
         if (enCasa) {
-            if (estaCercaDeSalir()) {
+            if (pantallaTienda.estaCercaDeSalir(jugador)) {
                 entrarSalirTienda();
             }
         }
         
         if (!pantallaTienda.estaDentro()) {
         	
-            if (estaCercaDeLaTienda()) {
+            if (pantallaTienda.estaCercaDeLaTienda(jugador, mapaGranja)) {
             	
                 entrarSalirTienda();
                 
@@ -504,7 +423,6 @@ public class PantallaGranja extends ScreenAdapter {
      
         controlClima.actualizar(delta);
 
-        // Efectos visuales de clima
         boolean mostrarClima = !pantallaTienda.estaDentro() && !enCasa;
 
         controlClima.renderizarOscurecimiento(
@@ -519,37 +437,24 @@ public class PantallaGranja extends ScreenAdapter {
             mostrarClima
         );
         
-
         // ==========================================
         // LÓGICA DE MENSAJES FLOTANTES (PROMPTS MUNDIALES)
         // ==========================================
         if (estaCercaDeLaCasa() && !controlSueno.estaDurmiendo()) {
             float casaX = zonaDormir.x + (zonaDormir.width / 2f);
             float casaY = zonaDormir.y + zonaDormir.height;
-            gestorInteraccion.mostrarPromptMundial("Z", "Dormir", casaX, casaY, camara);
+            gestorPrompt.mostrarPromptMundial("Z", "Dormir", casaX, casaY, camara);
         } 
-        else if (pantallaTienda.estaDentro() && estaCercaDeComprar()) {
+        else if (pantallaTienda.estaDentro() && pantallaTienda.estaCercaDeComprar(jugador)) {
             float comprarX = zonaComprar.x + (zonaComprar.width / 2f);
             float comprarY = zonaComprar.y + zonaComprar.height;
-            gestorInteraccion.mostrarPromptMundial("T", "Tienda", comprarX, comprarY, camara);
+            gestorPrompt.mostrarPromptMundial("T", "Tienda", comprarX, comprarY, camara);
         } 
         else {
-            gestorInteraccion.ocultarPrompt();
+            gestorPrompt.ocultarPrompt();
         }
 
-        // =========================
-        // DIBUJAR HUD (Reloj, Lluvia, Monedas)
-        // =========================
-        batch.setProjectionMatrix(hudCamara.combined);
-        batch.begin();
-        
-        font.getData().setScale(1.2f);
-        String textoHud = "Dia: " + reloj.getDias() + " | Hora: " + reloj.getHoraFormateada() + " | Monedas: $" + billetera.getMonedas();
-        font.draw(batch, textoHud, 20, V_HEIGHT - 20);
-        font.getData().setScale(1f);
-        
-        gestorInventario.renderizar(batch, font, V_WIDTH, V_HEIGHT);
-        batch.end();
+        gestorHud.renderizar(batch, reloj, billetera, V_WIDTH, V_HEIGHT);
 
         // =========================
         // RENDERIZAR STAGE DE UI (Tienda / Menús)
@@ -643,6 +548,7 @@ public class PantallaGranja extends ScreenAdapter {
         pantallaTienda.dispose();
         controlClima.dispose();
         gestorInventario.dispose();
+        gestorHud.dispose();
         stageUi.dispose();
         skinUi.dispose();
         if (gestorAudio != null) {
@@ -651,8 +557,8 @@ public class PantallaGranja extends ScreenAdapter {
         if (shapeRenderer != null) {
             shapeRenderer.dispose();
         }
-        if (gestorInteraccion != null) {
-            gestorInteraccion.dispose();
+        if (gestorPrompt != null) {
+            gestorPrompt.dispose();
         }
 
         for (Texture textura : texturasCultivos.values()) {

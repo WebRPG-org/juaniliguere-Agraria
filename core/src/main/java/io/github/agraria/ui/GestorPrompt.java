@@ -9,7 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
 
-public class GestorInteraccion {
+public class GestorPrompt {
 
     private Stage stage;
     private Table contenedorPrompt;
@@ -19,7 +19,7 @@ public class GestorInteraccion {
     
     private Vector3 posicionTemporal = new Vector3();
 
-    public GestorInteraccion(Stage stage, Skin skin) {
+    public GestorPrompt(Stage stage, Skin skin) {
         this.stage = stage;
 
         contenedorPrompt = new Table(skin);

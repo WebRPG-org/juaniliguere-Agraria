@@ -59,10 +59,33 @@ public class PantallaTienda {
         jugadorDentro = false;
     }
 
-    // =========================
-    // DETECTAR ZONA DE SALIDA
-    // =========================
 
+
+    public boolean estaCercaDeLaTienda(Personaje jugador, GestorMapa mapaGranja) {
+
+        Rectangle zonaTienda = mapaGranja.getZonaTienda();
+
+        if (zonaTienda == null) {
+            return false;
+        }
+
+        return zonaTienda.contains(
+            jugador.getCentroX(),
+            jugador.getPiesY()
+        );
+    }
+
+    public boolean estaCercaDeComprar(Personaje jugador) {
+    	
+        Rectangle zonaComprar = mapa.getZonaComprar();
+        
+        if (zonaComprar == null) {
+        	return false;
+        } 
+        
+        return zonaComprar.contains(jugador.getCentroX(), jugador.getPiesY());
+    }
+    
     public boolean estaCercaDeSalir(Personaje jugador) {
 
         Rectangle zonaSalir = mapa.getZonaSalir();
@@ -71,10 +94,7 @@ public class PantallaTienda {
             return false;
         }
 
-        return zonaSalir.contains(
-            jugador.getCentroX(),
-            jugador.getPiesY()
-        );
+        return zonaSalir.contains(jugador.getCentroX(), jugador.getPiesY());
     }
 
     // =========================
