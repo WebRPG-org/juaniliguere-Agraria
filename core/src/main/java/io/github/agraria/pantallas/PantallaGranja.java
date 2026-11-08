@@ -14,6 +14,7 @@ import io.github.agraria.tienda.VentanaTienda;
 import io.github.agraria.ui.GestorInteraccion;
 import io.github.agraria.ui.InteraccionPrompt;
 import io.github.agraria.control.ControlCultivos;
+import io.github.agraria.control.ControlEntrada;
 import io.github.agraria.control.ControlJugador;
 import io.github.agraria.control.ControlTienda;
 import io.github.agraria.personajes.Personaje;
@@ -55,15 +56,12 @@ public class PantallaGranja extends ScreenAdapter {
     private GestorMapa controlMapa;
     
     private GestorMapa mapaGranja;
-    private GestorMapa mapaTienda;
+    private PantallaTienda pantallaTienda;
     private GestorMapa mapaCasa;
 
-    // Estado de la ubicación del jugador
-    private boolean enTienda = false;
+
     private boolean enCasa = false;
-    // Posición del jugador antes de entrar
-    private float posicionAnteriorX;
-    private float posicionAnteriorY;
+
    
     private OrthographicCamera camara;
     private Viewport vp;
@@ -107,11 +105,11 @@ public class PantallaGranja extends ScreenAdapter {
     private GestorAudio gestorAudio;
 
     private boolean isSaliendoAlMenu = false;
-    private float fadeAlpha = 0f;
+
 
     private GestorInteraccion gestorInteraccion;
     
-
+    private ControlEntrada controlEntrada;
 
     public PantallaGranja() {
 
@@ -133,7 +131,7 @@ public class PantallaGranja extends ScreenAdapter {
             font = new BitmapFont();
 
             mapaGranja = new GestorMapa("pantallas/zona1/AgrariaMapa.tmx");
-            mapaTienda = new GestorMapa("pantallas/tienda/interiorTienda.tmx");
+            pantallaTienda = new PantallaTienda();
             mapaCasa = new GestorMapa("pantallas/casa/interiorCasa.tmx");
        
         
@@ -230,6 +228,7 @@ public class PantallaGranja extends ScreenAdapter {
     public void show() {
 
     	controlJugador = new ControlJugador(jugador, inventario);
+    	controlEntrada = new ControlEntrada();
     	
     	// Acciones del jugador en la granja
     	controlJugador.setAccionDormir(() -> procesarDormir());
@@ -254,8 +253,9 @@ public class PantallaGranja extends ScreenAdapter {
         
         // Combinamos la UI y el control del jugador para que ambos reciban eventos
         com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
-        multiplexer.addProcessor(stageUi);   // Primero la UI (botones de la tienda)
-        multiplexer.addProcessor(controlJugador); // Después el juego
+        multiplexer.addProcessor(stageUi);   
+        multiplexer.addProcessor(controlEntrada);
+        multiplexer.addProcessor(controlJugador);
         
         Gdx.input.setInputProcessor(multiplexer);
     }
@@ -322,7 +322,7 @@ public class PantallaGranja extends ScreenAdapter {
     
     
     public void intentarEntrarSalirTienda() {
-        if (!enTienda) {
+        if (!pantallaTienda.estaDentro()) {
             // Si estamos afuera, SOLO entramos si estamos cerca de la zona
             if (estaCercaDeLaTienda()) {
             	
@@ -337,33 +337,30 @@ public class PantallaGranja extends ScreenAdapter {
         }
     }
     
+   
+
+
+    
+    
     public void entrarSalirTienda() {
 
-    	if (!enTienda) {
-    		
-            System.out.println("ENTRANDO A LA TIENDA");
-            posicionAnteriorX = jugador.getX();
-            posicionAnteriorY = jugador.getY();
+        if (!pantallaTienda.estaDentro()) {
 
-            controlMapa = mapaTienda;
-            jugador.setPosicion(80, 30);
-            
-            System.out.println("Posición X: " + jugador.getX());
-            System.out.println("Posición Y: " + jugador.getY());
-            System.out.println("Colisiones tienda: " + mapaTienda.getColisionesMapa().size);
-            
-            enTienda = true;
+            System.out.println("ENTRANDO A LA TIENDA");
+
+            pantallaTienda.entrar(jugador);
+
+            controlMapa = pantallaTienda.getMapa();
 
         } else {
-        	
+
             System.out.println("SALIENDO A LA GRANJA");
+
+            pantallaTienda.salir(jugador);
+
             controlMapa = mapaGranja;
-            jugador.setPosicion(posicionAnteriorX, posicionAnteriorY -15);
-            enTienda = false;
-            
         }
 
-        // Actualizar referencias del mapa actual
         zonaDormir = controlMapa.getZonaDormir();
         zonaTienda = controlMapa.getZonaTienda();
         zonaComprar = controlMapa.getZonaComprar();
@@ -428,19 +425,16 @@ public class PantallaGranja extends ScreenAdapter {
             controlJugador.actualizarMovimiento();
         }
 
-        // --- DETECTAR TECLA ESC PARA INICIAR TRANSICIÓN A NEGRO Y VOLVER AL MENÚ ---
-        if (Gdx.input.isKeyJustPressed(Keys.ESCAPE) && !isSaliendoAlMenu) {
-            isSaliendoAlMenu = true;
-        }
+     // --- DETECTAR TECLA ESC A TRAVÉS DE ControlEntrada ---
+        if (controlEntrada != null && controlEntrada.isSolicitioSalirMenu() && !isSaliendoAlMenu) {
 
-        // Si la transición está activa, actualizamos la opacidad del fundido
+            isSaliendoAlMenu = true;
+        	System.out.println("se abrio el menu");
+        }
+        
         if (isSaliendoAlMenu) {
-            fadeAlpha += delta * 1.5f; // Velocidad del fundido a negro
-            if (fadeAlpha >= 1f) {
-                fadeAlpha = 1f;
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaMenu());
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaPausa());
                 return;
-            }
         }
 
         controlClima.actualizar(delta);
@@ -467,13 +461,20 @@ public class PantallaGranja extends ScreenAdapter {
             }
         }
         
-        if (!enTienda) {
+        if (!pantallaTienda.estaDentro()) {
+        	
             if (estaCercaDeLaTienda()) {
+            	
                 entrarSalirTienda();
+                
             }
+            
         } else {
-            if (estaCercaDeSalir()) {
+        	
+            if (pantallaTienda.estaCercaDeSalir(jugador)) {
+            	
                 entrarSalirTienda();
+                
             }
         }
         
@@ -488,7 +489,7 @@ public class PantallaGranja extends ScreenAdapter {
         batch.setProjectionMatrix(camara.combined);
         batch.begin();
 
-        if (!enTienda && !enCasa) {
+        if (!pantallaTienda.estaDentro() && !enCasa) {
             gestorCultivos.renderizar(
                 batch,
                 etapasCultivos,
@@ -504,7 +505,7 @@ public class PantallaGranja extends ScreenAdapter {
         controlClima.actualizar(delta);
 
         // Efectos visuales de clima
-        boolean mostrarClima = !enTienda && !enCasa;
+        boolean mostrarClima = !pantallaTienda.estaDentro() && !enCasa;
 
         controlClima.renderizarOscurecimiento(
             shapeRenderer, camara,
@@ -527,7 +528,7 @@ public class PantallaGranja extends ScreenAdapter {
             float casaY = zonaDormir.y + zonaDormir.height;
             gestorInteraccion.mostrarPromptMundial("Z", "Dormir", casaX, casaY, camara);
         } 
-        else if (enTienda && estaCercaDeComprar()) {
+        else if (pantallaTienda.estaDentro() && estaCercaDeComprar()) {
             float comprarX = zonaComprar.x + (zonaComprar.width / 2f);
             float comprarY = zonaComprar.y + zonaComprar.height;
             gestorInteraccion.mostrarPromptMundial("T", "Tienda", comprarX, comprarY, camara);
@@ -559,20 +560,7 @@ public class PantallaGranja extends ScreenAdapter {
         // Transición de sueño
         controlSueno.renderizarEfectoVisual(shapeRenderer, batch, camara, hudCamara, vp, font, reloj, V_WIDTH, V_HEIGHT);
 
-        // --- DIBUJAR LA CAPA NEGRA DE LA TRANSICIÓN AL MENÚ ---
-        if (fadeAlpha > 0f) {
-            Gdx.gl.glEnable(GL20.GL_BLEND);
-            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-            
-            shapeRenderer.setProjectionMatrix(hudCamara.combined);
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(0, 0, 0, fadeAlpha);
-            shapeRenderer.rect(0, 0, V_WIDTH, V_HEIGHT);
-            shapeRenderer.end();
-            
-            Gdx.gl.glDisable(GL20.GL_BLEND);
-        }
-        
+
         // ==========================================
         // CÁLCULO DINÁMICO DE LUZ / ATARDECER / NOCHE
         // ==========================================
@@ -640,6 +628,7 @@ public class PantallaGranja extends ScreenAdapter {
     }
 
 
+    
     @Override
     public void resize(int width, int height) {
         vp.update(width, height);
@@ -651,7 +640,7 @@ public class PantallaGranja extends ScreenAdapter {
         batch.dispose();
         jugador.liberarRecursos();
         mapaGranja.dispose();
-        mapaTienda.dispose();
+        pantallaTienda.dispose();
         controlClima.dispose();
         gestorInventario.dispose();
         stageUi.dispose();
