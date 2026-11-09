@@ -1,6 +1,6 @@
 package io.github.agraria.pantallas;
 
-import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
@@ -10,10 +10,13 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-public class PantallaPausa extends ScreenAdapter{
 
-	private Stage stage;
+public class PantallaPausa extends ScreenAdapter {
+
+    private Stage stage;
     private Skin skin;
     private ShapeRenderer shapeRenderer;
     private OrthographicCamera camera;
@@ -36,6 +39,24 @@ public class PantallaPausa extends ScreenAdapter{
         TextButton btnContinuar = new TextButton("Continuar", skin);
         TextButton btnSalir = new TextButton("Salir al Menu", skin);
 
+        // --- ACCIÓN DEL BOTÓN CONTINUAR ---
+        btnContinuar.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Volvemos a la pantalla de la granja (o podés manejar un sistema de regreso)
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaGranja());
+            }
+        });
+
+        // --- ACCIÓN DEL BOTÓN SALIR AL MENÚ ---
+        btnSalir.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Te devuelve al menú principal del juego
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaMenu());
+            }
+        });
+
         tabla.add(btnContinuar).width(200).height(50).padBottom(20).row();
         tabla.add(btnSalir).width(200).height(50);
 
@@ -44,9 +65,7 @@ public class PantallaPausa extends ScreenAdapter{
 
     @Override
     public void render(float delta) {
-        // 1. IMPORTANTE: NO limpiamos la pantalla con ScreenUtils.clear para que lo de atrás no se borre.
-        
-        // 2. Dibujamos una capa semitransparente oscura encima del juego para dar efecto de "pausa"
+        // Dibujamos una capa semitransparente oscura encima del juego para dar efecto de "pausa"
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         shapeRenderer.setProjectionMatrix(camera.combined);
@@ -56,7 +75,7 @@ public class PantallaPausa extends ScreenAdapter{
         shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
 
-        // 3. Dibujamos la ventana de la UI encima
+        // Dibujamos la ventana de la UI encima
         stage.act(delta);
         stage.draw();
     }
@@ -72,5 +91,4 @@ public class PantallaPausa extends ScreenAdapter{
         skin.dispose();
         shapeRenderer.dispose();
     }
-	
 }

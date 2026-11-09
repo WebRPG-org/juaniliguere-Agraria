@@ -60,13 +60,6 @@ public class PantallaGranja extends ScreenAdapter {
 
     private GestorCultivos gestorCultivos;
 
-    // Guarda las etapas de cada tipo de cultivo.
-    private ObjectMap<TipoCultivo, TextureRegion[]> etapasCultivos;
-    // Texturas originales que debemos liberar al cerrar la pantalla
-    private ObjectMap<TipoCultivo, Texture> texturasCultivos;
-    
-    private ObjectMap<TipoCultivo, Texture> texturasPodridas;
-
     private Reloj reloj;
     private ControlSueno controlSueno;
     private ControlClima controlClima;
@@ -154,14 +147,10 @@ public class PantallaGranja extends ScreenAdapter {
                 controlMapa.getMapHeightTiles()
         );
 
-        gestorCultivos = new GestorCultivos(
-                controlMapa.getMapWidthTiles(),
-                controlMapa.getMapHeightTiles(),
-                controlMapa.getTileWidth(),    
-                matrizPlantable
-        );
+        gestorCultivos = new GestorCultivos(controlMapa.getMapWidthTiles(), controlMapa.getMapHeightTiles(), controlMapa.getTileWidth(),  matrizPlantable);
+        gestorCultivos.cargarTexturas();
 
-        cargarTexturasCultivos();
+
         
         reloj = new Reloj();
         controlClima = new ControlClima(gestorCultivos);
@@ -176,39 +165,6 @@ public class PantallaGranja extends ScreenAdapter {
         
     }
 
-    // Carga automáticamente las texturas de todos los tipos de cultivo existentes.
-    private void cargarTexturasCultivos() {
-        etapasCultivos = new ObjectMap<>();
-        texturasCultivos = new ObjectMap<>();
-        texturasPodridas = new ObjectMap<>();
-
-        for (TipoCultivo tipo : TipoCultivo.values()) {
-            Texture textura = new Texture(tipo.getRutaTextura());
-            textura.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-            texturasCultivos.put(tipo, textura);
-
-            int cantidadEtapas = tipo.getCantidadEtapas();
-            int anchoEtapa = textura.getWidth() / cantidadEtapas;
-            int altoEtapa = textura.getHeight();
-
-            TextureRegion[] etapas = new TextureRegion[cantidadEtapas];
-
-            for (int i = 0; i < cantidadEtapas; i++) {
-                etapas[i] = new TextureRegion(textura, i * anchoEtapa, 0, anchoEtapa, altoEtapa);
-            }
-
-            etapasCultivos.put(tipo, etapas);
-            
-            Texture texturaPodrida = new Texture(tipo.getRutaTexturaPodrido());
-
-            texturaPodrida.setFilter(
-                Texture.TextureFilter.Nearest,
-                Texture.TextureFilter.Nearest
-            );
-
-            texturasPodridas.put(tipo, texturaPodrida);
-        }
-    }
 
 
     @Override
@@ -374,28 +330,7 @@ public class PantallaGranja extends ScreenAdapter {
         
         jugador.actualizar(delta, controlMapa.getColisionesMapa(), controlMapa.getAnchoMapaPixels(), controlMapa.getAltoMapaPixels());
         
-        if (enCasa) {
-            if (pantallaTienda.estaCercaDeSalir(jugador)) {
-                entrarSalirTienda();
-            }
-        }
-        
-        if (!pantallaTienda.estaDentro()) {
-        	
-            if (pantallaTienda.estaCercaDeLaTienda(jugador, mapaGranja)) {
-            	
-                entrarSalirTienda();
-                
-            }
-            
-        } else {
-        	
-            if (pantallaTienda.estaCercaDeSalir(jugador)) {
-            	
-                entrarSalirTienda();
-                
-            }
-        }
+        verificarInteraccionesTiendaCasa();
         
         actualizarCamara();
 
@@ -409,11 +344,7 @@ public class PantallaGranja extends ScreenAdapter {
         batch.begin();
 
         if (!pantallaTienda.estaDentro() && !enCasa) {
-            gestorCultivos.renderizar(
-                batch,
-                etapasCultivos,
-                texturasPodridas
-            );
+        	gestorCultivos.renderizar(batch);
         }
 
         jugador.renderizar(batch);
@@ -436,23 +367,8 @@ public class PantallaGranja extends ScreenAdapter {
             V_WIDTH, V_HEIGHT,
             mostrarClima
         );
-        
-        // ==========================================
-        // LÓGICA DE MENSAJES FLOTANTES (PROMPTS MUNDIALES)
-        // ==========================================
-        if (estaCercaDeLaCasa() && !controlSueno.estaDurmiendo()) {
-            float casaX = zonaDormir.x + (zonaDormir.width / 2f);
-            float casaY = zonaDormir.y + zonaDormir.height;
-            gestorPrompt.mostrarPromptMundial("Z", "Dormir", casaX, casaY, camara);
-        } 
-        else if (pantallaTienda.estaDentro() && pantallaTienda.estaCercaDeComprar(jugador)) {
-            float comprarX = zonaComprar.x + (zonaComprar.width / 2f);
-            float comprarY = zonaComprar.y + zonaComprar.height;
-            gestorPrompt.mostrarPromptMundial("T", "Tienda", comprarX, comprarY, camara);
-        } 
-        else {
-            gestorPrompt.ocultarPrompt();
-        }
+
+        actualizarPromptsMundiales();
 
         gestorHud.renderizar(batch, reloj, billetera, V_WIDTH, V_HEIGHT);
 
@@ -466,19 +382,45 @@ public class PantallaGranja extends ScreenAdapter {
         controlSueno.renderizarEfectoVisual(shapeRenderer, batch, camara, hudCamara, vp, font, reloj, V_WIDTH, V_HEIGHT);
 
 
-        // ==========================================
-        // CÁLCULO DINÁMICO DE LUZ / ATARDECER / NOCHE
-        // ==========================================
+        renderizarIluminacionNocturna();
+    }
+    
+    private void verificarInteraccionesTiendaCasa() {
+        if (enCasa && pantallaTienda.estaCercaDeSalir(jugador)) {
+            entrarSalirTienda();
+        }
+        if (!pantallaTienda.estaDentro()) {
+            if (pantallaTienda.estaCercaDeLaTienda(jugador, mapaGranja)) {
+                entrarSalirTienda();
+            }
+        } else if (pantallaTienda.estaCercaDeSalir(jugador)) {
+            entrarSalirTienda();
+        }
+    }
+
+    private void actualizarPromptsMundiales() {
+        if (estaCercaDeLaCasa() && !controlSueno.estaDurmiendo()) {
+            float casaX = zonaDormir.x + (zonaDormir.width / 2f);
+            float casaY = zonaDormir.y + zonaDormir.height;
+            gestorPrompt.mostrarPromptMundial("Z", "Dormir", casaX, casaY, camara);
+        } else if (pantallaTienda.estaDentro() && pantallaTienda.estaCercaDeComprar(jugador)) {
+            float comprarX = zonaComprar.x + (zonaComprar.width / 2f);
+            float comprarY = zonaComprar.y + zonaComprar.height;
+            gestorPrompt.mostrarPromptMundial("T", "Tienda", comprarX, comprarY, camara);
+        } else {
+            gestorPrompt.ocultarPrompt();
+        }
+    }
+
+    private void renderizarIluminacionNocturna() {
         float horaActual = reloj.getHoras() + (reloj.getMinutos() / 60.0f);
         float alphaOscuridad = 0f;
         
         if (horaActual >= 18.0f && horaActual < 20.0f) {
             alphaOscuridad = (horaActual - 18.0f) / 2.0f * 0.5f;
-        } 
-        else if (horaActual >= 20.0f || horaActual < 5.0f) {
+        } else if (horaActual >= 20.0f || horaActual < 5.0f) {
             alphaOscuridad = 0.6f;
-        } 
-        else if (horaActual >= 5.0f && horaActual < 7.0f) {
+        } else if (horaActual >= 5.0f && horaActual < 7.0f) {
             alphaOscuridad = 0.6f - ((horaActual - 5.0f) / 2.0f * 0.6f);
         }
 
@@ -511,21 +453,14 @@ public class PantallaGranja extends ScreenAdapter {
         if (anchoMapa < viewportAnchoEfectivo) {
             camX = anchoMapa / 2f;
         } else {
-            camX = MathUtils.clamp(
-                    jugador.getX(),
-                    medioAnchoCamara,
-                    anchoMapa - medioAnchoCamara
-            );
+            camX = MathUtils.clamp(jugador.getX(), medioAnchoCamara, anchoMapa - medioAnchoCamara);
         }
 
         if (altoMapa < viewportAltoEfectivo) {
             camY = altoMapa / 2f;
         } else {
-            camY = MathUtils.clamp(
-                    jugador.getY(),
-                    medioAltoCamara,
-                    altoMapa - medioAltoCamara
-            );
+        	
+            camY = MathUtils.clamp(jugador.getY(), medioAltoCamara, altoMapa - medioAltoCamara);
         }
 
         camara.position.set(camX, camY, 0);
@@ -561,11 +496,6 @@ public class PantallaGranja extends ScreenAdapter {
             gestorPrompt.dispose();
         }
 
-        for (Texture textura : texturasCultivos.values()) {
-            textura.dispose();
-        }
-        for (Texture textura : texturasPodridas.values()) {
-            textura.dispose();
-        }
+        if (gestorCultivos != null) gestorCultivos.dispose();
     }
 }

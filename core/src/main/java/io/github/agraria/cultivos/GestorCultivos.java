@@ -18,6 +18,9 @@ public class GestorCultivos {
 
     private final int tamanoTilePixels;
 
+    private ObjectMap<TipoCultivo, TextureRegion[]> etapasCultivos;
+    private ObjectMap<TipoCultivo, Texture> texturasCultivos;
+    private ObjectMap<TipoCultivo, Texture> texturasPodridas;
 
     public GestorCultivos(int columnas, int filas, int tamanoTilePixels, boolean[][] matrizPlantable) {
 
@@ -181,12 +184,34 @@ public class GestorCultivos {
         }
     }
     
-    
-    public void renderizar(
-            SpriteBatch batch,
-            ObjectMap<TipoCultivo, TextureRegion[]> etapasCultivos,
-            ObjectMap<TipoCultivo, Texture> texturasPodridas) {
+    public void cargarTexturas() {
+        etapasCultivos = new ObjectMap<>();
+        texturasCultivos = new ObjectMap<>();
+        texturasPodridas = new ObjectMap<>();
 
+        for (TipoCultivo tipo : TipoCultivo.values()) {
+            Texture textura = new Texture(tipo.getRutaTextura());
+            textura.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+            texturasCultivos.put(tipo, textura);
+
+            int cantidadEtapas = tipo.getCantidadEtapas();
+            int anchoEtapa = textura.getWidth() / cantidadEtapas;
+            int altoEtapa = textura.getHeight();
+
+            TextureRegion[] etapas = new TextureRegion[cantidadEtapas];
+            for (int i = 0; i < cantidadEtapas; i++) {
+                etapas[i] = new TextureRegion(textura, i * anchoEtapa, 0, anchoEtapa, altoEtapa);
+            }
+            etapasCultivos.put(tipo, etapas);
+            
+            Texture texturaPodrida = new Texture(tipo.getRutaTexturaPodrido());
+            texturaPodrida.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+            texturasPodridas.put(tipo, texturaPodrida);
+        }
+    }
+    
+    
+    public void renderizar(SpriteBatch batch) {
         for (int fila = 0; fila < filas; fila++) {
             for (int col = 0; col < columnas; col++) {
                 Parcela parcela = grilla[fila][col];
@@ -202,13 +227,13 @@ public class GestorCultivos {
                 float yPx = fila * tamanoTilePixels;
 
                 if (cultivo.isPodrido()) {
-                    com.badlogic.gdx.graphics.Texture texturaPodrida = texturasPodridas.get(tipo);
+                    Texture texturaPodrida = texturasPodridas.get(tipo);
                     if (texturaPodrida != null) {
                         batch.draw(texturaPodrida, xPx, yPx, tamanoTilePixels, tamanoTilePixels);
                     }
                 } else {
                     int etapa = cultivo.getEtapaActual();
-                    com.badlogic.gdx.graphics.g2d.TextureRegion[] etapas = etapasCultivos.get(tipo);
+                    TextureRegion[] etapas = etapasCultivos.get(tipo);
 
                     if (etapas != null && etapa >= 0 && etapa < etapas.length) {
                         batch.draw(etapas[etapa], xPx, yPx, tamanoTilePixels, tamanoTilePixels);
@@ -217,6 +242,18 @@ public class GestorCultivos {
             }
         }
     }
+
+
+	public void dispose() {
+
+        for (Texture textura : texturasCultivos.values()) {
+            textura.dispose();
+        }
+        for (Texture textura : texturasPodridas.values()) {
+            textura.dispose();
+        }
+		
+	}
 }
 
 
