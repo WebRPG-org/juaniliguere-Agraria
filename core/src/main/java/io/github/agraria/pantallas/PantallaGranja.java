@@ -158,8 +158,6 @@ public class PantallaGranja extends ScreenAdapter {
         gestorHud = new GestorHud(inventario, V_WIDTH, V_HEIGHT);
         
         gestorAudio = new GestorAudio();
-        gestorAudio.reproducirMusicaFondo();
-        
         
         controlCultivos = new ControlCultivos(gestorCultivos, inventario, gestorAudio);
         
@@ -310,12 +308,15 @@ public class PantallaGranja extends ScreenAdapter {
 
             isSaliendoAlMenu = true;
         }
-        
+    
         if (isSaliendoAlMenu) {
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaPausa());
-                return;
-        }
+            isSaliendoAlMenu = false;
 
+            ((Game) Gdx.app.getApplicationListener())
+                .setScreen(new PantallaPausa(this));
+
+            return;
+        }
         controlClima.actualizar(delta);
         controlSueno.actualizar(delta, reloj, gestorCultivos);
 

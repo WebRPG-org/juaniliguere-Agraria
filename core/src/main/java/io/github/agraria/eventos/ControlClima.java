@@ -20,7 +20,7 @@ public class ControlClima {
     private float tiempoLluvia = 0f;
     
     private boolean lluviaActiva = false;      
-    private float intensidadLluvia = 0f;       // Va de 0.0 a 1.0 (Fade In/Out)
+    private float intensidadLluvia = 0f;     
 	private GestorCultivos gestorCultivos;
 
     public ControlClima(GestorCultivos gestorCultivos) {
@@ -47,17 +47,16 @@ public class ControlClima {
     }
 
     public void sortearClimaDiario() {
-        // MathUtils.random() da un valor entre 0.0 y 1.0
-        float probabilidadLluvia = 0.20f; 
+
+        float probabilidadLluvia = 0.99f; 
         lluviaActiva = MathUtils.random() < probabilidadLluvia;
 
         if (lluviaActiva) {
-            System.out.println("-> ¡Hoy va a llover!");
+
             if (gestorCultivos != null) {
                 gestorCultivos.hacerLlover();
             }
-        } else {
-            System.out.println("-> Hoy el día estará despejado.");
+            
         }
     }
     

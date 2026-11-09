@@ -1,45 +1,69 @@
 package io.github.agraria.sonidos;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 
 public class GestorAudio {
-	private static Music musicaFondo;
-	private Sound sonidoPlantar;
-	private Sound sonidoCosechar;
-	private Sound apretarBoton;
-	private Sound sonidoLluvia;
+    private static Music musicaFondo;
+    private Sound sonidoPlantar;
+    private Sound apretarBoton;
 
-	public GestorAudio() {
-        // Si ya existe música de fondo sonando o cargada previamente, la detenemos/liberamos antes de crear otra
+    public GestorAudio() {
+        // Si ya hay una música sonando, nos aseguramos de frenarla antes de reasignarla
         if (musicaFondo != null) {
             musicaFondo.stop();
             musicaFondo.dispose();
             musicaFondo = null;
         }
 
-        // Cargar música de fondo (loop)
-        musicaFondo = Gdx.audio.newMusic(Gdx.files.internal("sonidos/temaFondo.wav"));
-        musicaFondo.setLooping(true);
-        musicaFondo.setVolume(0.4f);
+        try {
+            // Cargar música de fondo (loop)
+            musicaFondo = Gdx.audio.newMusic(Gdx.files.internal("sonidos/temaFondo.wav"));
+            musicaFondo.setLooping(true);
+            musicaFondo.setVolume(0.4f);
+            musicaFondo.play(); // <-- ¡La reproducimos automáticamente al crear el objeto!
+        } catch (Exception e) {
+            Gdx.app.log("GestorAudio", "Error al cargar la musica de fondo: " + e.getMessage());
+        }
 
         // Cargar efectos cortos (WAV)
         sonidoPlantar = Gdx.audio.newSound(Gdx.files.internal("sonidos/plantar.wav"));
         apretarBoton = Gdx.audio.newSound(Gdx.files.internal("sonidos/apretarBoton.wav"));
     }
 
+    public void reproducirMusicaFondo() {
+        if (musicaFondo != null && !musicaFondo.isPlaying()) {
+            musicaFondo.play();
+        }
+    }
+
+    public static void apagarMusicaGlobal() {
+        if (musicaFondo != null) {
+            musicaFondo.stop();
+            musicaFondo.dispose();
+            musicaFondo = null;
+        }
+    }
+
+    public void reproducirPlantar() {
+        if (sonidoPlantar != null) {
+            sonidoPlantar.play(1.0f);
+        }
+    }
+    
+    public void reproducirApretarBoton() {
+        if (apretarBoton != null) {
+            apretarBoton.play(1.0f);
+        }
+    }
+
     public void dispose() {
-        // IMPORTANTE: En el dispose del gestor de audio NO hacemos el dispose de musicaFondo 
-        // si queremos que persista entre pantallas, O bien la detenemos si salimos al menú.
-        // Lo dejamos limpio así:
-        
         if (sonidoPlantar != null) {
             sonidoPlantar.dispose();
         }
-        
         if (apretarBoton != null) {
             apretarBoton.dispose();
         }
     }
-    
 }

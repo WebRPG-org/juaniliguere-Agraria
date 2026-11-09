@@ -14,15 +14,23 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
+import io.github.agraria.sonidos.GestorAudio;
+
 public class PantallaPausa extends ScreenAdapter {
 
     private Stage stage;
     private Skin skin;
     private ShapeRenderer shapeRenderer;
     private OrthographicCamera camera;
+	private PantallaGranja pantallaGranja;
 
+    public PantallaPausa(PantallaGranja pantallaGranja) {
+        this.pantallaGranja = pantallaGranja;
+    }
+    
     @Override
     public void show() {
+    	
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 600);
         stage = new Stage(new FitViewport(800, 600, camera));
@@ -43,8 +51,8 @@ public class PantallaPausa extends ScreenAdapter {
         btnContinuar.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Volvemos a la pantalla de la granja (o podés manejar un sistema de regreso)
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaGranja());
+
+                ((Game) Gdx.app.getApplicationListener()).setScreen(pantallaGranja);
             }
         });
 
@@ -52,10 +60,14 @@ public class PantallaPausa extends ScreenAdapter {
         btnSalir.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Te devuelve al menú principal del juego
+            	
+                GestorAudio.apagarMusicaGlobal();
                 ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaMenu());
+                
             }
         });
+        
+
 
         tabla.add(btnContinuar).width(200).height(50).padBottom(20).row();
         tabla.add(btnSalir).width(200).height(50);

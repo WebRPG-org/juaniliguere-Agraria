@@ -10,6 +10,7 @@ public class Parcela{
     private final boolean esPlantable;
 
     private Cultivo cultivoActual;
+    private int lluviasRecibidas = 0;
 
     public Parcela(int x, int y, boolean esPlantable) {
 //        this.x = x;
@@ -25,21 +26,30 @@ public class Parcela{
     } 
 
     public boolean plantar(TipoCultivo tipo) {
-    	
+
         if (!puedePlantar()) {
             return false;
         }
-        
+
         cultivoActual = new Cultivo(tipo);
+        lluviasRecibidas = 0;
+
         return true;
-        
     }
     
-    // <-- NUEVO: Recibe la lluvia y afecta al cultivo
     public void recibirLluvia() {
-        if (cultivoActual != null) {
-        	System.out.println("4. ¡Parcela con cultivo encontró lluvia! Pudriendo...");
+
+        if (cultivoActual == null || cultivoActual.isPodrido()) {
+            return;
+        }
+
+        lluviasRecibidas++;
+
+        System.out.println("Lluvias recibidas: " + lluviasRecibidas);
+
+        if (lluviasRecibidas >= 2) {
             cultivoActual.pudrir();
+            System.out.println("¡El cultivo se pudrió por recibir dos lluvias!");
         }
     }
 
