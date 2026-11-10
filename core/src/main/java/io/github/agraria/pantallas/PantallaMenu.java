@@ -2,6 +2,8 @@ package io.github.agraria.pantallas;
 
 import com.badlogic.gdx.Gdx;
 import io.github.agraria.Agraria;
+import io.github.agraria.sonidos.GestorAudio;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -42,13 +44,20 @@ public class PantallaMenu implements Screen {
 
     private static final float MAP_WIDTH = 480; 
     private static final float MAP_HEIGHT = 320;
+    
+    private GestorAudio gestorAudio;
 
     public PantallaMenu(Agraria juego) {
         this.juego = juego;
+
+        this.gestorAudio = new GestorAudio();
     }
     
     @Override
     public void show() {
+
+    	gestorAudio.reproducirMusicaFondo();
+    	
         // 1. Cargar el mapa Tiled
         map = new TmxMapLoader().load("pantallas/menu/AgrariaMenu.tmx");
 
@@ -188,7 +197,6 @@ public class PantallaMenu implements Screen {
             if (fadeAlpha >= 1f) {
                 fadeAlpha = 1f;
                 
-                // ACÁ CAMBIÁS A TU PANTALLA DE JUEGO CUANDO TERMINA EL NEGRO:
                 juego.setScreen(new PantallaCarga(juego));
             }
         }
@@ -220,7 +228,7 @@ public class PantallaMenu implements Screen {
 
     @Override 
     public void hide() {
-        // Quitar el procesador de entrada para evitar que el usuario interactúe durante el cambio
+
         Gdx.input.setInputProcessor(null);
     }
 
@@ -236,6 +244,9 @@ public class PantallaMenu implements Screen {
         if (shapeRenderer != null) {
             shapeRenderer.dispose(); // Liberar memoria del ShapeRenderer
         }
+        
+        Gdx.input.setInputProcessor(null);
+
     }
 
 }

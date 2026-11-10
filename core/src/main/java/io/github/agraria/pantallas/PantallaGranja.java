@@ -182,9 +182,33 @@ public class PantallaGranja extends ScreenAdapter {
     @Override
     public void show() {
 
-    	controlJugador = new ControlJugador(jugador, inventario);
-    	controlEntrada = new ControlEntrada();
+        gestorAudio.reproducirMusicaFondo();
     	
+
+        if (controlJugador == null) {
+            controlJugador = new ControlJugador(jugador, inventario);
+
+            controlJugador.setAccionDormir(() -> procesarDormir());
+            controlJugador.setAccionTienda(() -> procesarAbrirTienda());
+
+            controlJugador.setAccionCultivar(
+                (screenX, screenY) -> procesarCultivar(screenX, screenY)
+            );
+
+            controlJugador.setAccionCosechar(
+                (screenX, screenY) -> procesarCosechar(screenX, screenY)
+            );
+        }
+
+        controlEntrada = new ControlEntrada();
+
+        if (controlTienda == null) {
+            controlTienda = new ControlTienda(
+                stageUi, billetera, inventario, skinUi, controlJugador
+            );
+        }
+        
+        
     	// Acciones del jugador en la granja
     	controlJugador.setAccionDormir(() -> procesarDormir());
 
@@ -198,7 +222,7 @@ public class PantallaGranja extends ScreenAdapter {
     	    (screenX, screenY) -> procesarCosechar(screenX, screenY)
     	);
 
-        controlTienda = new ControlTienda(stageUi, billetera, inventario, skinUi, controlJugador);
+
         
         // Combinamos la UI y el control del jugador para que ambos reciban eventos
         com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
