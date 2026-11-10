@@ -2,28 +2,34 @@
 package io.github.agraria;
 
 import com.badlogic.gdx.Game;
-import io.github.agraria.pantallas.PantallaGranja;
+
 import io.github.agraria.pantallas.PantallaMenu;
-import io.github.agraria.sonidos.GestorAudio;
-import io.github.agraria.cultivos.TipoCultivo;
+import io.github.agraria.ui.GestorFuentes;
 
 public class Agraria extends Game {
-	
+
+    private GestorFuentes gestorFuentes;
 
     @Override
     public void create() {
-        setScreen(new PantallaMenu());
+
+        gestorFuentes = new GestorFuentes();
+        gestorFuentes.cargar();
+
+        setScreen(new PantallaMenu(this));
     }
-    @Override
-    public void render() {
-        super.render(); // Redirige el loop a PantallaGranja.render(delta)
+
+    public GestorFuentes getGestorFuentes() {
+        return gestorFuentes;
     }
 
     @Override
     public void dispose() {
+
         super.dispose();
-        if (getScreen() != null) {
-            getScreen().dispose();
+
+        if (gestorFuentes != null) {
+            gestorFuentes.dispose();
         }
     }
 }

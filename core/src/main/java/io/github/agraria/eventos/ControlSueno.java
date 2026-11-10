@@ -82,6 +82,7 @@ public class ControlSueno {
             if (reloj.getDias() == targetDiaDormir &&
                 reloj.getHoras() >= horaDespertar) {
 
+                gestorCultivos.procesarPudrir();
                 System.out.println("-> ¡Buenos días!");
                 estadoTransicion = EstadoTransicion.FADE_IN;
             }

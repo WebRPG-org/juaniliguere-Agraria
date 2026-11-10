@@ -9,13 +9,15 @@ import io.github.agraria.inventario.Inventario;
 import io.github.agraria.economia.Billetera;
 import io.github.agraria.ui.GestorHud;
 import io.github.agraria.ui.GestorPrompt;
+import io.github.agraria.Agraria;
 import io.github.agraria.control.ControlCultivos;
 import io.github.agraria.control.ControlEntrada;
 import io.github.agraria.control.ControlJugador;
 import io.github.agraria.control.ControlTienda;
 import io.github.agraria.personajes.Personaje;
 import io.github.tiempo.Reloj;
-
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.ScreenAdapter;
@@ -41,6 +43,8 @@ import com.badlogic.gdx.graphics.GL20;
 
 public class PantallaGranja extends ScreenAdapter {
 
+	private Agraria juego;
+	
     private SpriteBatch batch;
     private Personaje jugador;
 
@@ -71,9 +75,7 @@ public class PantallaGranja extends ScreenAdapter {
     private ShapeRenderer shapeRenderer;
     
     private Rectangle zonaDormir;
-    private Rectangle zonaTienda;
     private Rectangle zonaComprar;
-    private Rectangle zonaSalir;
     
     private Inventario inventario;
     private GestorInventario gestorInventario;
@@ -94,8 +96,9 @@ public class PantallaGranja extends ScreenAdapter {
     
     private GestorHud gestorHud;
 
-    public PantallaGranja() {
+    public PantallaGranja(Agraria juego) {
 
+        	this.juego = juego;
             batch = new SpriteBatch();
             jugador = new Personaje(125, 125);
             shapeRenderer = new ShapeRenderer();
@@ -111,7 +114,21 @@ public class PantallaGranja extends ScreenAdapter {
             
             hudCamara = new OrthographicCamera();
             hudCamara.setToOrtho(false, V_WIDTH, V_HEIGHT);
-            font = new BitmapFont();
+
+            FreeTypeFontGenerator generador = new FreeTypeFontGenerator(
+                Gdx.files.internal("fuentes/VT323-Regular.ttf")
+            );
+
+            FreeTypeFontGenerator.FreeTypeFontParameter parametros =
+                new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+            parametros.size = 22;
+            parametros.minFilter = Texture.TextureFilter.Nearest;
+            parametros.magFilter = Texture.TextureFilter.Nearest;
+
+            font = generador.generateFont(parametros);
+
+            generador.dispose();
 
             mapaGranja = new GestorMapa("pantallas/zona1/AgrariaMapa.tmx");
             pantallaTienda = new PantallaTienda();
@@ -120,9 +137,7 @@ public class PantallaGranja extends ScreenAdapter {
         controlMapa = mapaGranja;
         
         zonaDormir = controlMapa.getZonaDormir();
-        zonaTienda = controlMapa.getZonaTienda();
         zonaComprar = controlMapa.getZonaComprar();
-        zonaSalir = controlMapa.getZonaSalir();
         
         this.inventario = new Inventario(10);
         this.gestorInventario = new GestorInventario(inventario);
@@ -133,6 +148,7 @@ public class PantallaGranja extends ScreenAdapter {
      // Stage con la cámara fija del HUD para que no se mueva con el zoom del mapa
         stageUi = new Stage(new FitViewport(V_WIDTH, V_HEIGHT, hudCamara));
         skinUi = new Skin(Gdx.files.internal("uiskin.json"));
+        skinUi.get("default", Label.LabelStyle.class).font = font;
 
         // Inicializar el gestor de mensajes flotantes
         this.gestorPrompt = new GestorPrompt(stageUi, skinUi);
@@ -155,15 +171,13 @@ public class PantallaGranja extends ScreenAdapter {
         reloj = new Reloj();
         controlClima = new ControlClima(gestorCultivos);
         controlSueno = new ControlSueno();
-        gestorHud = new GestorHud(inventario, V_WIDTH, V_HEIGHT);
+        gestorHud = new GestorHud(inventario, V_WIDTH, V_HEIGHT, font);
         
         gestorAudio = new GestorAudio();
         
         controlCultivos = new ControlCultivos(gestorCultivos, inventario, gestorAudio);
         
     }
-
-
 
     @Override
     public void show() {
@@ -278,9 +292,7 @@ public class PantallaGranja extends ScreenAdapter {
         }
 
         zonaDormir = controlMapa.getZonaDormir();
-        zonaTienda = controlMapa.getZonaTienda();
         zonaComprar = controlMapa.getZonaComprar();
-        zonaSalir = controlMapa.getZonaSalir();
     }
     
     public void procesarAbrirTienda() {
@@ -353,7 +365,7 @@ public class PantallaGranja extends ScreenAdapter {
 
         controlMapa.renderArriba();
      
-        controlClima.actualizar(delta);
+//        controlClima.actualizar(delta);
 
         boolean mostrarClima = !pantallaTienda.estaDentro() && !enCasa;
 
@@ -498,5 +510,9 @@ public class PantallaGranja extends ScreenAdapter {
         }
 
         if (gestorCultivos != null) gestorCultivos.dispose();
+        
+        if (font != null) {
+            font.dispose();
+        }
     }
 }

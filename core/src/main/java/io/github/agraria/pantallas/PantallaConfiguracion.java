@@ -12,6 +12,8 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import io.github.agraria.Agraria;
+
 public class PantallaConfiguracion extends ScreenAdapter {
     private TiledMap map;
     private OrthogonalTiledMapRenderer renderer;
@@ -42,7 +44,7 @@ public class PantallaConfiguracion extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE)) {
-            ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaMenu());
+            ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaMenu((Agraria) Gdx.app.getApplicationListener()));
         }
 
         // Asegurate de actualizar la cámara antes de pasarla al renderer

@@ -1,6 +1,7 @@
 package io.github.agraria.pantallas;
 
 import com.badlogic.gdx.Gdx;
+import io.github.agraria.Agraria;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -24,6 +25,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 
 public class PantallaMenu implements Screen {
 
+	private Agraria juego;
     private TiledMap map;
     private OrthogonalTiledMapRenderer renderer;
     private OrthographicCamera camera;
@@ -41,6 +43,10 @@ public class PantallaMenu implements Screen {
     private static final float MAP_WIDTH = 480; 
     private static final float MAP_HEIGHT = 320;
 
+    public PantallaMenu(Agraria juego) {
+        this.juego = juego;
+    }
+    
     @Override
     public void show() {
         // 1. Cargar el mapa Tiled
@@ -103,7 +109,7 @@ public class PantallaMenu implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Activamos la bandera para que comience el fundido a negro
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaConfiguracion());
+            	juego.setScreen(new PantallaConfiguracion());
             }
         });
         
@@ -123,7 +129,7 @@ public class PantallaMenu implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Activamos la bandera para que comience el fundido a negro
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaControles());
+            	juego.setScreen(new PantallaControles());
             }
         });
         
@@ -183,7 +189,7 @@ public class PantallaMenu implements Screen {
                 fadeAlpha = 1f;
                 
                 // ACÁ CAMBIÁS A TU PANTALLA DE JUEGO CUANDO TERMINA EL NEGRO:
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaCarga());
+                juego.setScreen(new PantallaCarga(juego));
             }
         }
 

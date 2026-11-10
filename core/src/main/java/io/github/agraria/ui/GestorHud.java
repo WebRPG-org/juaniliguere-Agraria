@@ -16,11 +16,12 @@ public class GestorHud {
     private Inventario inventario;
     private GestorInventario gestorInventario;
 
-    public GestorHud(Inventario inventario, int vWidth, int vHeight) {
-        this.font = new BitmapFont();
+    public GestorHud(Inventario inventario, int vWidth, int vHeight, BitmapFont font) {
+        this.font = font;
+
         this.hudCamara = new OrthographicCamera();
         this.hudCamara.setToOrtho(false, vWidth, vHeight);
-        
+
         this.inventario = inventario;
         this.gestorInventario = new GestorInventario(inventario);
     }
@@ -43,7 +44,7 @@ public class GestorHud {
     }
 
     public void dispose() {
-        if (font != null) font.dispose();
+ 
         if (gestorInventario != null) gestorInventario.dispose();
     }
 }

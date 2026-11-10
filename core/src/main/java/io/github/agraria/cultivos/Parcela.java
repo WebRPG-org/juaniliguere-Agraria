@@ -11,6 +11,7 @@ public class Parcela{
 
     private Cultivo cultivoActual;
     private int lluviasRecibidas = 0;
+    private boolean pendienteDePudrirse = false;
 
     public Parcela(int x, int y, boolean esPlantable) {
 //        this.x = x;
@@ -33,6 +34,7 @@ public class Parcela{
 
         cultivoActual = new Cultivo(tipo);
         lluviasRecibidas = 0;
+        pendienteDePudrirse = false;
 
         return true;
     }
@@ -48,8 +50,18 @@ public class Parcela{
         System.out.println("Lluvias recibidas: " + lluviasRecibidas);
 
         if (lluviasRecibidas >= 2) {
-            cultivoActual.pudrir();
+            pendienteDePudrirse = true;
             System.out.println("¡El cultivo se pudrió por recibir dos lluvias!");
+        }
+    }
+    
+    public void procesarPudrir() {
+
+        if (cultivoActual != null && pendienteDePudrirse) {
+            cultivoActual.pudrir();
+            pendienteDePudrirse = false;
+
+            System.out.println("¡El cultivo se pudrió al comenzar el nuevo día!");
         }
     }
 

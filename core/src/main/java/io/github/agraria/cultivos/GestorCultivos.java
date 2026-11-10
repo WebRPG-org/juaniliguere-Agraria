@@ -210,6 +210,15 @@ public class GestorCultivos {
         }
     }
     
+    public void procesarPudrir() {
+
+        for (int f = 0; f < filas; f++) {
+            for (int c = 0; c < columnas; c++) {
+                grilla[f][c].procesarPudrir();
+            }
+        }
+    }
+    
     
     public void renderizar(SpriteBatch batch) {
         for (int fila = 0; fila < filas; fila++) {

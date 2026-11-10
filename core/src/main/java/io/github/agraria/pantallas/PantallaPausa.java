@@ -1,6 +1,7 @@
 package io.github.agraria.pantallas;
 
 import com.badlogic.gdx.Game;
+import io.github.agraria.Agraria;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
@@ -62,7 +63,7 @@ public class PantallaPausa extends ScreenAdapter {
             public void clicked(InputEvent event, float x, float y) {
             	
                 GestorAudio.apagarMusicaGlobal();
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaMenu());
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaMenu((Agraria) Gdx.app.getApplicationListener()));
                 
             }
         });
